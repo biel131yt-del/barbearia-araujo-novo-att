@@ -20,7 +20,7 @@ Implementado: cadastro com senha persistida e login automático, sessões opacas
 - Não há cobrança online. Concluir um atendimento significa registrar pagamento recebido no local.
 - Clientes internos sem senha não podem assumir uma conta apenas informando telefone. É preciso definir um fluxo de convite/recuperação com verificação para migrar cadastros antigos com segurança.
 - A credencial DATABASE_URL que estava no resumo foi removida do arquivo atual, mas permanece no histórico público: rotacionar no Neon e atualizar a Vercel.
-- Não houve alteração de dados ou migração em produção durante a preparação local. A conexão Neon e o teste completo com o banco real continuam pendentes.
+- Atualização de 31/10/2026: Neon conectado. A estrutura de produção tinha somente users, clients e barbers. As migrations 001 (ordem corrigida) e 002 foram validadas em branch isolada e aplicadas em transação a produção. Foram preservados o usuário administrador e a ausência de clientes/agendamentos. O código ainda não foi publicado na Vercel nem sincronizado com o GitHub por bloqueios de autorização.
 - `npm audit` sinaliza avisos preexistentes em Next e PostCSS, sem correção automática disponível. Não foi aplicado upgrade forçado.
 
 ## Verificação local
@@ -28,3 +28,14 @@ Implementado: cadastro com senha persistida e login automático, sessões opacas
 - `npm test`: migrações em PostgreSQL isolado (PGlite), reexecução segura, reservas, conflitos, duração, fechamento, preço, promoção e receita sem duplicação; horários e fuso de Brasília.
 - `npm run typecheck`.
 - `npm run build` com DATABASE_URL fictícia válida para a compilação; não valida acesso ao banco real.
+
+## Validação no Neon — 31/10/2026
+
+- Projeto: `odd-night-77525369` — Felipe Barbearia araujo Versão 2.
+- Produção: `br-wild-cloud-b64wpayy` (`neondb`).
+- Backup anterior às migrations, sem compute: `br-super-bonus-b6vij9dg`.
+- Branch isolada com registros fictícios de teste: `br-lucky-unit-b6n2kvbz`.
+- APIs validadas com o servidor local ligado à branch isolada: login admin 200; cadastro 201; sessão cliente 200; disponibilidade 200; reserva 201; repetição 409; visitante sem login 401; histórico 200; conclusão 200; conclusão repetida 409; receitas 200 com uma entrada; cadastro e pagamento de despesa 201/200; oferta 200 e preço descontado pela data; logout e novo login 200.
+- UI: login administrativo, agenda com períodos separados, login cliente, seleção de serviço, consulta de horários reais, revisão com preço promocional e confirmação “Horário reservado!”.
+- Produção após migrations: 1 usuário, 0 clientes, 0 agendamentos, 4 serviços iniciais e 0 receitas. Os testes não contaminaram produção.
+- Pendências externas: autorizar o time da Vercel para a integração e renovar o GitHub CLI (o token local expirou; a integração de GitHub recusou escrita com 403). Não publicar de uma versão antiga do GitHub, pois ela não contém estas correções.
