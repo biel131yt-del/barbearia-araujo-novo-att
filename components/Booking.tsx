@@ -1,7 +1,7 @@
 "use client";
 
 import { Calendar, User, Clock as ClockIcon, MapPin } from "lucide-react";
-import { WHATSAPP_LINK } from "@/lib/utils";
+import Link from "next/link";
 import { motion } from "framer-motion";
 
 export default function Booking() {
@@ -41,28 +41,29 @@ export default function Booking() {
                   <User className="h-5 w-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-white">Confirme seu contato</h3>
+                  <h3 className="font-bold text-white">Confirme seu horário</h3>
                   <p className="text-sm text-slate-400">
-                    Receba a confirmação pelo WhatsApp.
+                    Acompanhe sua reserva na sua conta.
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur">
-              <h4 className="font-bold text-white mb-4">Pronto para agendar?</h4>
+              <h4 className="font-bold text-white mb-4">
+                Pronto para agendar?
+              </h4>
               <p className="text-sm text-slate-400 mb-6">
-                Fale conosco pelo WhatsApp e reserve seu horário agora mesmo.
+                Crie sua conta uma vez e reserve os horários disponíveis pelo
+                aplicativo.
               </p>
-              <a
-                href={WHATSAPP_LINK("Quero agendar meu horário na Barbearia Araujo")}
-                target="_blank"
-                rel="noopener noreferrer"
+              <Link
+                href="/agendar"
                 className="inline-flex items-center justify-center gap-2 w-full rounded-xl font-semibold transition-all active:scale-[0.98] h-14 px-6 text-lg bg-accent text-white shadow-glow-red hover:shadow-glow-red hover:brightness-105 press"
               >
                 <MapPin className="h-5 w-5" />
-                Falar no WhatsApp
-              </a>
+                Agendar meu horário
+              </Link>
             </div>
           </div>
         </div>

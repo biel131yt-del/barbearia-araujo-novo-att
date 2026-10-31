@@ -1,7 +1,7 @@
 {
   "name": "Barbearia Araujo — Premium",
   "short_name": "Araujo",
-  "description": "Agende corte, barba e combo premium na Barbearia Araujo. Rápido, pelo celular, com confirmação no WhatsApp.",
+  "description": "Agende corte, barba e combo premium na Barbearia Araujo. Rápido, pelo celular, com reserva pelo aplicativo.",
   "id": "/",
   "start_url": "/cliente",
   "scope": "/",

@@ -13,7 +13,7 @@ const bebasNeue = Bebas_Neue({
 export const metadata: Metadata = {
   title: "Barbearia Araujo — Agende seu corte",
   description:
-    "Agende corte, barba e combo na Barbearia Araujo. Rápido, pelo celular, com confirmação no WhatsApp.",
+    "Agende corte, barba e combo na Barbearia Araujo. Rápido, pelo celular, com reserva pelo aplicativo.",
   icons: [
     { rel: "icon", type: "image/svg+xml", url: "/icon.svg" },
     { rel: "icon", url: "/icon-192.png" },

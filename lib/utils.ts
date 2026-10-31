@@ -7,7 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 
 export const formatPrice = (value: number) =>
   new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
-    value
+    value,
   );
 
 export const WHATSAPP_NUMBER = "555196824286";
@@ -66,7 +66,7 @@ export const HOW_IT_WORKS = [
   },
   {
     step: "3",
-    title: "Confirme no WhatsApp",
-    text: "PIX antecipado ou no local",
+    title: "Confirme no aplicativo",
+    text: "Pagamento no atendimento",
   },
 ] as const;
