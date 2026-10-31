@@ -7,9 +7,7 @@ import { motion } from "framer-motion";
 
 export default function Hero() {
   return (
-    <section
-      className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-brand-600 via-brand-900 to-brand-950 p-6 md:p-10 text-white md:mt-10 md:grid md:grid-cols-2 md:gap-10 lg:p-12 min-h-[440px] md:min-h-[520px]"
-    >
+    <section className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-brand-600 via-brand-900 to-brand-950 p-6 md:p-10 text-white md:mt-10 md:grid md:grid-cols-2 md:gap-10 lg:p-12 min-h-[440px] md:min-h-[520px]">
       {/* Decorative scissors pattern */}
       <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 opacity-[0.08] md:opacity-[0.12]">
         <svg
@@ -60,8 +58,8 @@ export default function Hero() {
           transition={{ duration: 1 }}
           className="mt-3 max-w-md text-sm leading-relaxed text-slate-300 md:text-base lg:text-lg"
         >
-          Escolha o serviço, o dia e a hora. Confirmação na hora pelo WhatsApp.
-          Sem burocracia, com estilo.
+          Escolha o serviço, o dia e a hora. Reserve diretamente pelo
+          aplicativo. Sem burocracia, com estilo.
         </motion.div>
 
         <motion.div
@@ -70,10 +68,7 @@ export default function Hero() {
           transition={{ duration: 1.1 }}
           className="mt-6 flex flex-col gap-3 sm:flex-row"
         >
-          <Link
-            href="/agendar"
-            className="group relative flex-1"
-          >
+          <Link href="/agendar" className="group relative flex-1">
             <button className="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-xl font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 h-16 px-8 text-lg press w-full bg-accent text-white shadow-glow-red hover:shadow-glow-red hover:brightness-110">
               <CalendarCheck className="h-5 w-5" />
               Agendar Agora
@@ -81,10 +76,7 @@ export default function Hero() {
             <div className="absolute -inset-1 bg-gradient-to-r from-red-500 to-orange-500 rounded-xl opacity-0 group-hover:opacity-20 blur-md transition-opacity duration-300" />
           </Link>
 
-          <Link
-            href="#servicos"
-            className="group relative flex-1"
-          >
+          <Link href="#servicos" className="group relative flex-1">
             <button className="inline-flex items-center justify-center gap-2.5 whitespace-nowrap rounded-xl font-semibold transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-50 h-16 px-8 text-lg press w-full border-2 border-white/20 bg-white/5 text-white hover:bg-white/10 hover:border-white">
               <ChevronRight className="h-5 w-5" />
               Ver serviços
@@ -105,12 +97,12 @@ export default function Hero() {
       </div>
 
       <div className="relative hidden md:flex items-center justify-center">
-        <div className="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-6 text-white backdrop-blur-md shadow-card animate-pulse">
+        <div className="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-6 text-white backdrop-blur-md shadow-card">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-1">
-            Próximo horário livre
+            Sua próxima visita
           </p>
           <p className="text-sm text-slate-300 font-medium">
-            Consultando agenda…
+            Escolha um serviço e consulte os dias disponíveis.
           </p>
           <Link href="/agendar" className="block mt-4">
             <button className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all active:scale-[0.98] h-11 px-4 text-sm w-full bg-accent text-white shadow-glow-red-sm hover:shadow-glow-red">

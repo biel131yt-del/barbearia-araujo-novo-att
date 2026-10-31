@@ -1,64 +1,40 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { getAdminUser, auditLog } from "@/lib/auth";
-
-export async function GET(req: Request) {
-  const user = await getAdminUser();
-  if (!user) {
+import { getAdminUser } from "@/lib/auth";
+export async function GET() {
+  if (!(await getAdminUser()))
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
-
-  const { searchParams } = new URL(req.url);
-  const search = searchParams.get("search");
-
-  let rows;
-  if (search) {
-    rows = await sql`
-      SELECT * FROM clients
-      WHERE name ILIKE ${`%${search}%`} OR phone ILIKE ${`%${search}%`}
-      ORDER BY name ASC
-      LIMIT 100
-    `;
-  } else {
-    rows = await sql`
-      SELECT * FROM clients ORDER BY name ASC LIMIT 100
-    `;
-  }
-
-  return NextResponse.json({ clients: rows });
+  const clients =
+    await sql`SELECT c.id,c.name,c.phone,c.email,c.status,c.created_at,
+ COUNT(a.id)::int AS total_appointments,COALESCE(SUM(a.price_cents) FILTER (WHERE a.payment_status='paid'),0)::int AS total_spent_cents,
+ MAX(a.appointment_date)::text AS last_appointment,
+ ((NOW() AT TIME ZONE 'America/Sao_Paulo')::date-MAX(a.appointment_date))::int AS days_since_visit
+ FROM clients c LEFT JOIN appointments a ON a.client_id=c.id AND a.status='completed'
+ GROUP BY c.id ORDER BY c.name`;
+  return NextResponse.json({ clients });
 }
-
 export async function POST(req: Request) {
-  const user = await getAdminUser();
-  if (!user) {
+  if (!(await getAdminUser()))
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
-
   try {
-    const body = await req.json();
-    const { name, phone, email, birth_date, notes } = body;
-
-    if (!name || !phone) {
-      return NextResponse.json({ error: "Nome e telefone são obrigatórios" }, { status: 400 });
-    }
-
-    const [client] = await sql`
-      INSERT INTO clients (name, phone, email, birth_date, notes)
-      VALUES (${name}, ${phone}, ${email ?? null}, ${birth_date ?? null}, ${notes ?? null})
-      RETURNING *
-    `;
-
-    await auditLog({
-      userId: user.id,
-      action: "create_client",
-      entityType: "client",
-      entityId: client.id,
-      newValues: { name, phone, email },
-    });
-
+    const { name, phone, email } = await req.json();
+    const digits = String(phone || "").replace(/\D/g, "");
+    if (typeof name !== "string" || !name.trim() || !/^\d{10,13}$/.test(digits))
+      throw new Error("Informe nome e telefone válidos.");
+    const [existing] =
+      await sql`SELECT id FROM clients WHERE regexp_replace(phone,'[^0-9]','','g')=${digits}`;
+    if (existing)
+      return NextResponse.json(
+        { error: "Telefone já cadastrado" },
+        { status: 409 },
+      );
+    const [client] =
+      await sql`INSERT INTO clients(name,phone,email) VALUES(${name.trim()},${digits},${email || null}) RETURNING id,name,phone,email`;
     return NextResponse.json({ client }, { status: 201 });
-  } catch (err) {
-    console.error(err);
-    return NextResponse.json({ error: "Erro ao criar cliente" }, { status: 500 });
+  } catch (e) {
+    return NextResponse.json(
+      { error: e instanceof Error ? e.message : "Erro ao cadastrar cliente" },
+      { status: 400 },
+    );
   }
 }

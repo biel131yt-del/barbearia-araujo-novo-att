@@ -70,8 +70,11 @@ export default function Footer() {
           <div>
             <p className="font-bold text-white mb-3">Horário</p>
             <p className="text-sm text-slate-400">
-              Ter a Sáb: 9h às 19h<br />
-              <span className="text-slate-500">Domingo e Segunda: fechado</span>
+              Atendimento com hora marcada.
+              <br />
+              <span className="text-slate-500">
+                Consulte os dias abertos no agendamento.
+              </span>
             </p>
           </div>
         </div>

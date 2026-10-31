@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
+import { getClientUser } from "@/lib/auth-session";
 import { sql } from "@/lib/db";
 
-const CLIENT_SESSION_COOKIE = "barbearia_client_session";
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const clientId = cookieStore.get(CLIENT_SESSION_COOKIE)?.value;
+  const clientId = (await getClientUser())?.id;
 
   if (!clientId) {
     return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
@@ -26,7 +24,7 @@ export async function GET() {
   } catch {
     return NextResponse.json(
       { error: "Erro ao carregar agendamentos" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

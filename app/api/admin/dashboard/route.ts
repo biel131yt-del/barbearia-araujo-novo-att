@@ -1,3 +1,4 @@
+import { localDate } from "@/lib/availability";
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getAdminUser, auditLog } from "@/lib/auth";
@@ -10,8 +11,8 @@ export async function GET() {
   }
 
   try {
-    const today = new Date().toISOString().split("T")[0];
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0];
+    const today = localDate();
+    const startOfMonth = localDate().slice(0, 7) + "-01";
 
     // Agendamentos hoje
     const [appointmentsToday] = await sql`
@@ -21,7 +22,7 @@ export async function GET() {
     // Próximos 7 dias
     const [upcomingCount] = await sql`
       SELECT COUNT(*) as count FROM appointments
-      WHERE appointment_date >= ${today} AND appointment_date <= ${new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split("T")[0]}
+      WHERE appointment_date >= ${today} AND appointment_date <= ${localDate(new Date(Date.now() + 7 * 24 * 60 * 60 * 1000))}
       AND status IN ('scheduled', 'confirmed')
     `;
 
@@ -131,6 +132,9 @@ export async function GET() {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Erro ao carregar dashboard" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao carregar dashboard" },
+      { status: 500 },
+    );
   }
 }

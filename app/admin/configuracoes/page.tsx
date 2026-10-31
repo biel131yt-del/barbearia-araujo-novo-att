@@ -109,11 +109,7 @@ export default function ConfiguracoesPage() {
       {/* Conteúdo das abas */}
       {activeTab === "geral" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card
-            title="Dados da Barbearia"
-            icon={Info}
-            color="bg-blue-50"
-          >
+          <Card title="Dados da Barbearia" icon={Info} color="bg-blue-50">
             <SettingRow
               label="Nome da Barbearia"
               key="nome_barbearia"
@@ -145,7 +141,10 @@ export default function ConfiguracoesPage() {
             <SettingRow
               label="Horário de Funcionamento"
               key="horario_funcionamento"
-              value={getSetting("horario_funcionamento", "Ter a Sáb: 9h às 19h")}
+              value={getSetting(
+                "horario_funcionamento",
+                "Ter a Sáb: 9h às 19h",
+              )}
               onSave={saveSetting}
               saving={saving}
             />
@@ -155,24 +154,47 @@ export default function ConfiguracoesPage() {
 
       {activeTab === "notificacoes" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card
-            title="Notificações Push"
-            icon={Bell}
-            color="bg-indigo-50"
-          >
+          <Card title="Notificações Push" icon={Bell} color="bg-indigo-50">
             <p className="text-sm text-gray-600 mb-4">
-              Receba alertas em tempo real no seu dispositivo sobre novos agendamentos, pagamentos e estoque baixo.
+              Receba alertas em tempo real no seu dispositivo sobre novos
+              agendamentos, pagamentos e estoque baixo.
             </p>
             <PushSubscription />
             <div className="mt-6 p-4 rounded-xl border border-gray-100 bg-gray-50">
-              <h3 className="text-sm font-bold text-gray-900 mb-3">Eventos disponíveis</h3>
+              <h3 className="text-sm font-bold text-gray-900 mb-3">
+                Eventos disponíveis
+              </h3>
               <div className="space-y-2">
-                <NotificationToggle label="Novo agendamento" key="notify_new_appointment" defaultChecked />
-                <NotificationToggle label="Agendamento confirmado" key="notify_confirmed" defaultChecked />
-                <NotificationToggle label="Agendamento cancelado" key="notify_cancelled" defaultChecked />
-                <NotificationToggle label="Pagamento Pix aprovado" key="notify_pix_approved" defaultChecked />
-                <NotificationToggle label="Estoque abaixo do mínimo" key="notify_low_stock" defaultChecked />
-                <NotificationToggle label="Nova avaliação" key="notify_new_review" defaultChecked />
+                <NotificationToggle
+                  label="Novo agendamento"
+                  key="notify_new_appointment"
+                  defaultChecked
+                />
+                <NotificationToggle
+                  label="Agendamento confirmado"
+                  key="notify_confirmed"
+                  defaultChecked
+                />
+                <NotificationToggle
+                  label="Agendamento cancelado"
+                  key="notify_cancelled"
+                  defaultChecked
+                />
+                <NotificationToggle
+                  label="Pagamento Pix aprovado"
+                  key="notify_pix_approved"
+                  defaultChecked
+                />
+                <NotificationToggle
+                  label="Estoque abaixo do mínimo"
+                  key="notify_low_stock"
+                  defaultChecked
+                />
+                <NotificationToggle
+                  label="Nova avaliação"
+                  key="notify_new_review"
+                  defaultChecked
+                />
               </div>
             </div>
           </Card>
@@ -183,7 +205,8 @@ export default function ConfiguracoesPage() {
             color="bg-green-50"
           >
             <p className="text-sm text-gray-600 mb-4">
-              Teste se as notificações push estão funcionando no seu dispositivo.
+              Teste se as notificações push estão funcionando no seu
+              dispositivo.
             </p>
             <div className="space-y-3">
               <button
@@ -201,11 +224,7 @@ export default function ConfiguracoesPage() {
 
       {activeTab === "seguranca" && (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card
-            title="Sessão Ativa"
-            icon={Shield}
-            color="bg-green-50"
-          >
+          <Card title="Sessão Ativa" icon={Shield} color="bg-green-50">
             <div className="space-y-4">
               <div className="p-4 rounded-lg border border-gray-100 bg-gray-50">
                 <div className="flex items-center justify-between">
@@ -237,35 +256,40 @@ export default function ConfiguracoesPage() {
             </div>
           </Card>
 
-          <Card
-            title="Alterar Senha"
-            icon={Lock}
-            color="bg-rose-50"
-          >
+          <Card title="Alterar Senha" icon={Lock} color="bg-rose-50">
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Senha atual</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Senha atual
+                </label>
                 <input
                   type="password"
+                  name="current_password"
                   required
                   className="w-full pl-4 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Nova senha</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Nova senha
+                </label>
                 <input
                   type="password"
+                  name="new_password"
                   required
-                  minLength={6}
+                  minLength={8}
                   className="w-full pl-4 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                 />
               </div>
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">Confirmar nova senha</label>
+                <label className="block text-sm font-medium text-gray-700">
+                  Confirmar nova senha
+                </label>
                 <input
                   type="password"
+                  name="confirm_password"
                   required
-                  minLength={6}
+                  minLength={8}
                   className="w-full pl-4 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none transition-colors"
                 />
               </div>
@@ -289,18 +313,21 @@ export default function ConfiguracoesPage() {
           >
             <div className="space-y-4">
               <PaymentToggle label="Pix" key="pagamento_pix" defaultChecked />
-              <PaymentToggle label="Dinheiro" key="pagamento_dinheiro" defaultChecked />
+              <PaymentToggle
+                label="Dinheiro"
+                key="pagamento_dinheiro"
+                defaultChecked
+              />
               <PaymentToggle label="Cartão de Débito" key="pagamento_debito" />
-              <PaymentToggle label="Cartão de Crédito" key="pagamento_credito" />
+              <PaymentToggle
+                label="Cartão de Crédito"
+                key="pagamento_credito"
+              />
               <PaymentToggle label="Outros" key="pagamento_outros" />
             </div>
           </Card>
 
-          <Card
-            title="Chave Pix"
-            icon={Phone}
-            color="bg-green-50"
-          >
+          <Card title="Chave Pix" icon={Phone} color="bg-green-50">
             <SettingRow
               label="Chave Pix (e-mail/telefone/CNPJ)"
               key="chave_pix"
@@ -325,14 +352,10 @@ export default function ConfiguracoesPage() {
             color="bg-purple-50"
           >
             <div className="space-y-3">
-              <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-              >
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors">
                 <FileText className="h-4 w-4" /> Fazer Backup dos Dados
               </button>
-              <button
-                className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-              >
+              <button className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl border border-gray-200 bg-white text-gray-700 font-medium hover:bg-gray-50 transition-colors">
                 <Barcode className="h-4 w-4" /> Restaurar Backup
               </button>
               <div className="pt-2 text-xs text-gray-500 text-center">
@@ -341,27 +364,33 @@ export default function ConfiguracoesPage() {
             </div>
           </Card>
 
-          <Card
-            title="Sobre o Sistema"
-            icon={Info}
-            color="bg-gray-50"
-          >
+          <Card title="Sobre o Sistema" icon={Info} color="bg-gray-50">
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white">
                 <span className="text-sm text-gray-600">Versão</span>
-                <span className="text-sm font-medium text-gray-900">2.0.0 Premium</span>
+                <span className="text-sm font-medium text-gray-900">
+                  2.0.0 Premium
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white">
                 <span className="text-sm text-gray-600">Banco de Dados</span>
-                <span className="text-sm font-medium text-gray-900">Neon PostgreSQL</span>
+                <span className="text-sm font-medium text-gray-900">
+                  Neon PostgreSQL
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white">
                 <span className="text-sm text-gray-600">Hospedagem</span>
-                <span className="text-sm font-medium text-gray-900">Vercel</span>
+                <span className="text-sm font-medium text-gray-900">
+                  Vercel
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 rounded-lg border border-gray-100 bg-white">
-                <span className="text-sm text-gray-600">Última atualização</span>
-                <span className="text-sm font-medium text-gray-900">Out 2026</span>
+                <span className="text-sm text-gray-600">
+                  Última atualização
+                </span>
+                <span className="text-sm font-medium text-gray-900">
+                  Out 2026
+                </span>
               </div>
             </div>
           </Card>
@@ -371,11 +400,25 @@ export default function ConfiguracoesPage() {
   );
 }
 
-function Card({ children, title, icon: Icon, color }: { children: React.ReactNode; title: string; icon: any; color: string }) {
+function Card({
+  children,
+  title,
+  icon: Icon,
+  color,
+}: {
+  children: React.ReactNode;
+  title: string;
+  icon: any;
+  color: string;
+}) {
   return (
-    <div className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${color}`}>
+    <div
+      className={`bg-white rounded-2xl shadow-sm border border-gray-100 p-6 ${color}`}
+    >
       <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-lg bg-white">{<Icon className="h-5 w-5" />}</div>
+        <div className="p-2 rounded-lg bg-white">
+          {<Icon className="h-5 w-5" />}
+        </div>
         <h3 className="text-lg font-bold text-gray-900">{title}</h3>
       </div>
       {children}
@@ -383,7 +426,19 @@ function Card({ children, title, icon: Icon, color }: { children: React.ReactNod
   );
 }
 
-function SettingRow({ label, key, value, onSave, saving }: { label: string; key: string; value: string; onSave: (k: string, v: string) => void; saving: boolean }) {
+function SettingRow({
+  label,
+  key,
+  value,
+  onSave,
+  saving,
+}: {
+  label: string;
+  key: string;
+  value: string;
+  onSave: (k: string, v: string) => void;
+  saving: boolean;
+}) {
   const [inputValue, setInputValue] = useState(value);
   const [edited, setEdited] = useState(false);
 
@@ -419,7 +474,15 @@ function SettingRow({ label, key, value, onSave, saving }: { label: string; key:
   );
 }
 
-function NotificationToggle({ label, key, defaultChecked = false }: { label: string; key: string; defaultChecked?: boolean }) {
+function NotificationToggle({
+  label,
+  key,
+  defaultChecked = false,
+}: {
+  label: string;
+  key: string;
+  defaultChecked?: boolean;
+}) {
   const [checked, setChecked] = useState(defaultChecked);
   return (
     <label className="flex items-center justify-between p-2 rounded-lg border border-gray-100 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
@@ -434,7 +497,15 @@ function NotificationToggle({ label, key, defaultChecked = false }: { label: str
   );
 }
 
-function PaymentToggle({ label, key, defaultChecked = false }: { label: string; key: string; defaultChecked?: boolean }) {
+function PaymentToggle({
+  label,
+  key,
+  defaultChecked = false,
+}: {
+  label: string;
+  key: string;
+  defaultChecked?: boolean;
+}) {
   const [checked, setChecked] = useState(defaultChecked);
   return (
     <label className="flex items-center justify-between p-2 rounded-lg border border-gray-100 bg-white cursor-pointer hover:bg-gray-50 transition-colors">
@@ -472,7 +543,32 @@ function sendTestNotification() {
     .catch(() => alert("Erro ao enviar notificação."));
 }
 
-function handlePasswordChange(e: React.FormEvent) {
+async function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {
   e.preventDefault();
-  alert("Funcionalidade de alteração de senha será implementada com integração completa de auth.");
+  const form = e.currentTarget;
+  const data = new FormData(form);
+  if (data.get("new_password") !== data.get("confirm_password")) {
+    alert("As senhas não coincidem.");
+    return;
+  }
+  const button = form.querySelector("button");
+  if (button) button.disabled = true;
+  try {
+    const r = await fetch("/api/auth/password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        current_password: data.get("current_password"),
+        new_password: data.get("new_password"),
+      }),
+    });
+    const d = await r.json();
+    if (!r.ok) throw new Error(d.error);
+    form.reset();
+    alert("Senha alterada. As outras sessões foram encerradas.");
+  } catch (e) {
+    alert(e instanceof Error ? e.message : "Falha ao alterar senha");
+  } finally {
+    if (button) button.disabled = false;
+  }
 }

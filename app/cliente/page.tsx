@@ -40,7 +40,7 @@ export default function ClientePage() {
 
   if (loading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gray-50">
+      <div className="flex h-screen items-center justify-center bg-gray-50 text-gray-900">
         <div className="flex flex-col items-center gap-2">
           <div className="h-8 w-8 rounded-full border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
           <p className="text-sm text-gray-600">Carregando...</p>
@@ -52,7 +52,7 @@ export default function ClientePage() {
   if (!authenticated) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 text-gray-900 py-8">
       <div className="container mx-auto px-4">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
           <div>
@@ -83,7 +83,7 @@ export default function ClientePage() {
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 text-gray-900">
                   <tr>
                     <th className="px-4 py-3 font-medium text-gray-500">Data / Hora</th>
                     <th className="px-4 py-3 font-medium text-gray-500">Serviço</th>
@@ -94,7 +94,7 @@ export default function ClientePage() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {appointments.map((ap) => (
-                    <tr key={ap.id} className="hover:bg-gray-50 transition-colors">
+                    <tr key={ap.id} className="hover:bg-gray-50 text-gray-900 transition-colors">
                       <td className="px-4 py-3 text-gray-900 font-medium">
                         {ap.appointment_date} {ap.appointment_time}
                       </td>

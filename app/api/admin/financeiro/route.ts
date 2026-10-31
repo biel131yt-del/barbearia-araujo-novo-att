@@ -1,3 +1,4 @@
+import { localDate } from "@/lib/availability";
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getAdminUser, auditLog } from "@/lib/auth";
@@ -9,8 +10,8 @@ export async function GET() {
   }
 
   try {
-    const startOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().split("T")[0];
-    const today = new Date().toISOString().split("T")[0];
+    const startOfMonth = localDate().slice(0, 7) + "-01";
+    const today = localDate();
 
     // Receita recebida este mês
     const [revenue] = await sql`
@@ -60,7 +61,10 @@ export async function GET() {
     `;
 
     const recentMovements = [...recentRevenues, ...recentExpenses]
-      .sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())
+      .sort(
+        (a: any, b: any) =>
+          new Date(b.date).getTime() - new Date(a.date).getTime(),
+      )
       .slice(0, 10);
 
     await auditLog({
@@ -87,6 +91,9 @@ export async function GET() {
     });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Erro ao carregar financeiro" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao carregar financeiro" },
+      { status: 500 },
+    );
   }
 }

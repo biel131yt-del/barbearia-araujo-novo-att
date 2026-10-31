@@ -29,7 +29,7 @@ export default function ClienteCadastroPage() {
         setLoading(false);
         return;
       }
-      router.push("/cliente/login");
+      router.push("/agendar");
     } catch {
       setError("Erro ao conectar com o servidor");
       setLoading(false);
@@ -37,20 +37,24 @@ export default function ClienteCadastroPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 text-gray-900">
       <div className="w-full max-w-md px-6">
         <div className="mb-8 text-center">
           <div className="w-12 h-12 rounded-2xl bg-blue-900 flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">
             BA
           </div>
           <h1 className="text-2xl font-bold text-gray-900">Criar conta</h1>
-          <p className="text-gray-600">Cadastre-se para acompanhar seus agendamentos</p>
+          <p className="text-gray-600">
+            Cadastre-se para acompanhar seus agendamentos
+          </p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Nome completo</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Nome completo
+              </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
@@ -64,7 +68,9 @@ export default function ClienteCadastroPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Telefone</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Telefone
+              </label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
@@ -78,7 +84,9 @@ export default function ClienteCadastroPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">E-mail (opcional)</label>
+              <label className="block text-sm font-medium text-gray-700">
+                E-mail (opcional)
+              </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
@@ -91,11 +99,15 @@ export default function ClienteCadastroPage() {
               </div>
             </div>
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Senha</label>
+              <label className="block text-sm font-medium text-gray-700">
+                Senha
+              </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
                 <input
                   type="password"
+                  minLength={8}
+                  autoComplete="new-password"
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -122,7 +134,10 @@ export default function ClienteCadastroPage() {
         </div>
         <p className="mt-6 text-center text-sm text-gray-500">
           Já tem uma conta?{" "}
-          <a href="/cliente/login" className="text-blue-600 hover:text-blue-500 font-medium">
+          <a
+            href="/cliente/login"
+            className="text-blue-600 hover:text-blue-500 font-medium"
+          >
             Faça login
           </a>
         </p>
