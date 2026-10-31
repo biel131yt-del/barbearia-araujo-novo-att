@@ -1,101 +1,172 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { useSession } from "@/lib/session";
-import { Banknote, FileText } from "lucide-react";
-
-export default function FechamentoPage() {
-  const { user, loading } = useSession();
-  const [fechamentos, setFechamentos] = useState<any[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
-  const [dataSelecionada, setDataSelecionada] = useState("");
-
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  async function loadData() {
-    setLoadingData(true);
-    const res = await fetch("/api/admin/financeiro/fechamentos");
-    const data = await res.json();
-    setFechamentos(data.fechamentos || []);
-    setLoadingData(false);
+import { localDate } from "@/lib/availability";
+const money = (n: number) =>
+  (n / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+export default function Page() {
+  const [date, setDate] = useState(localDate()),
+    [rows, setRows] = useState<any[]>([]),
+    [totals, setTotals] = useState<any[]>([]),
+    [adjust, setAdjust] = useState("0"),
+    [note, setNote] = useState(""),
+    [error, setError] = useState(""),
+    [busy, setBusy] = useState(false);
+  async function load() {
+    try {
+      const r = await fetch("/api/admin/financeiro/fechamentos");
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      setRows(d.fechamentos);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Falha ao carregar");
+    }
   }
-
-  if (loading || !user) return null;
-
+  useEffect(() => {
+    load();
+  }, []);
+  useEffect(() => {
+    const c = new AbortController();
+    fetch("/api/admin/financeiro/fechamentos?date=" + date, {
+      signal: c.signal,
+    })
+      .then(async (r) => {
+        const d = await r.json();
+        if (!r.ok) throw new Error(d.error);
+        setTotals(d.totals);
+      })
+      .catch((e) => {
+        if (e.name !== "AbortError") setError(e.message);
+      });
+    return () => c.abort();
+  }, [date]);
+  async function close(e: React.FormEvent) {
+    e.preventDefault();
+    if (
+      !confirm(
+        "Registrar o fechamento deste dia? Esse registro não pode ser fechado novamente.",
+      )
+    )
+      return;
+    setBusy(true);
+    setError("");
+    try {
+      const r = await fetch("/api/admin/financeiro/fechamentos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          closure_date: date,
+          adjustments_cents: Math.round(Number(adjust) * 100),
+          adjustments_note: note,
+        }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      setError("Fechamento registrado.");
+      await load();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Falha ao fechar");
+    } finally {
+      setBusy(false);
+    }
+  }
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fechamento Diário</h1>
-          <p className="text-gray-500">Conferência e fechamento do caixa</p>
-        </div>
-        <div className="flex gap-2">
+      <h1 className="text-2xl font-bold">Fechamento diário</h1>
+      <form
+        onSubmit={close}
+        className="bg-white border rounded-2xl p-5 space-y-4"
+      >
+        <label className="admin-label">
+          Data
           <input
+            required
             type="date"
-            value={dataSelecionada}
-            onChange={(e) => setDataSelecionada(e.target.value)}
-            className="pl-3 pr-4 py-2.5 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 outline-none"
+            max={localDate()}
+            className="admin-input max-w-xs"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
           />
-          <button className="px-4 py-2.5 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors">
-            Fechar Caixa
-          </button>
+        </label>
+        <p className="text-sm text-gray-500">
+          Recebimentos registrados:{" "}
+          <strong>
+            {money(totals.reduce((n, t) => n + Number(t.total), 0))}
+          </strong>
+        </p>
+        <div className="grid sm:grid-cols-2 gap-3">
+          <label className="admin-label">
+            Ajuste do caixa (R$; negativo para saída)
+            <input
+              required
+              type="number"
+              step=".01"
+              className="admin-input"
+              value={adjust}
+              onChange={(e) => setAdjust(e.target.value)}
+            />
+          </label>
+          <label className="admin-label">
+            Observação
+            <input
+              className="admin-input"
+              maxLength={300}
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+          </label>
         </div>
+        <button disabled={busy} className="admin-primary">
+          {busy ? "Registrando…" : "Fechar caixa"}
+        </button>
+        <p className="text-xs text-gray-500">
+          O fechamento guarda um retrato dos recebimentos e ajustes neste
+          momento. Despesas aparecem no fluxo de caixa. Lançamentos posteriores
+          não alteram o fechamento salvo.
+        </p>
+      </form>
+      {error && (
+        <p role="status" className="text-blue-700">
+          {error}
+        </p>
+      )}
+      <div className="grid md:grid-cols-2 gap-4">
+        {rows.map((f) => (
+          <article key={f.id} className="bg-white border rounded-2xl p-5">
+            <h2 className="font-bold">
+              {String(f.closure_date)
+                .slice(0, 10)
+                .split("-")
+                .reverse()
+                .join("/")}
+            </h2>
+            <p className="text-sm text-gray-500 mt-3">
+              Dinheiro {money(f.cash_total_cents)} · Pix{" "}
+              {money(f.pix_total_cents)}
+            </p>
+            <p className="text-sm text-gray-500">
+              Cartões {money(f.card_total_cents)} · Outros{" "}
+              {money(f.other_total_cents)}
+            </p>
+            <p className="text-sm text-gray-500">
+              Ajuste {money(f.adjustments_cents)}
+            </p>
+            <strong className="block text-xl mt-3">
+              Total{" "}
+              {money(
+                f.cash_total_cents +
+                  f.pix_total_cents +
+                  f.card_total_cents +
+                  f.other_total_cents +
+                  f.adjustments_cents,
+              )}
+            </strong>
+            <p className="text-xs text-gray-500 mt-2">{f.adjustments_note}</p>
+          </article>
+        ))}
       </div>
-
-      <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-        <h2 className="text-lg font-bold text-gray-900 mb-6">Fechamentos Anteriores</h2>
-        {loadingData ? (
-          <div className="h-64 flex items-center justify-center">
-            <div className="h-8 w-8 rounded-full border-2 border-blue-900 border-t-transparent rounded-full animate-spin" />
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-4 py-3 font-medium text-gray-500">Data</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 text-right">Dinheiro</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 text-right">Pix</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 text-right">Cartões</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 text-right">Outros</th>
-                  <th className="px-4 py-3 font-medium text-gray-500 text-right">Total</th>
-                  <th className="px-4 py-3 font-medium text-gray-500">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {fechamentos.map((f) => (
-                  <tr key={f.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-4 py-3 text-gray-700">{new Date(f.closure_date).toLocaleDateString("pt-BR")}</td>
-                    <td className="px-4 py-3 text-gray-900 font-medium text-right">R$ {(f.cash_total_cents / 100).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-gray-900 font-medium text-right">R$ {(f.pix_total_cents / 100).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-gray-900 font-medium text-right">R$ {(f.card_total_cents / 100).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-gray-900 font-medium text-right">R$ {(f.other_total_cents / 100).toFixed(2)}</td>
-                    <td className="px-4 py-3 text-gray-900 font-bold text-right">
-                      R$ {(((f.cash_total_cents || 0) + (f.pix_total_cents || 0) + (f.card_total_cents || 0) + (f.other_total_cents || 0)) / 100).toFixed(2)}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        f.status === "closed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"
-                      }`}>
-                        {f.status === "closed" ? "Fechado" : "Aberto"}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-                {fechamentos.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="px-4 py-8 text-center text-gray-500">
-                      Nenhum fechamento registrado
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      {!rows.length && (
+        <p className="text-sm text-gray-500">Nenhum fechamento registrado.</p>
+      )}
     </div>
   );
 }

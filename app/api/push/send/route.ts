@@ -1,61 +1,28 @@
 import { NextResponse } from "next/server";
+import { getAdminUser } from "@/lib/auth";
+import { getClientUser } from "@/lib/auth-session";
 import { sql } from "@/lib/db";
-import { sendPushNotification, listPushDevices } from "@/lib/webpush";
-import { getAdminUser, auditLog } from "@/lib/auth";
-
+import { drainPushJobs } from "@/lib/push-jobs";
 export async function POST(req: Request) {
-  const user = await getAdminUser();
-  if (!user) {
+  const b = await req.json();
+  const client = b.audience === "client" ? await getClientUser() : null;
+  const user = b.audience !== "client" ? await getAdminUser() : null;
+  if (!client && !user)
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
-
-  try {
-    const { title, body, link, type } = await req.json();
-    if (!title || !body) {
-      return NextResponse.json({ error: "Título e corpo são obrigatórios" }, { status: 400 });
-    }
-
-    const devices = await listPushDevices(user.id);
-    let sent = 0;
-    let failed = 0;
-    const expiredEndpoints: string[] = [];
-
-    for (const device of devices) {
-      try {
-        const result = await sendPushNotification(
-          {
-            endpoint: device.endpoint,
-            keys: { p256dh: device.p256dh_key, auth: device.auth_key },
-          },
-          { title, body, link, type }
-        );
-        if (result.success) {
-          sent++;
-          await sql`UPDATE push_devices SET last_used_at = NOW() WHERE endpoint = ${device.endpoint}`;
-        } else if (result.reason === "subscription_expired") {
-          failed++;
-          expiredEndpoints.push(device.endpoint);
-        }
-      } catch {
-        failed++;
-      }
-    }
-
-    // Remove inscrições expiradas
-    for (const endpoint of expiredEndpoints) {
-      await sql`DELETE FROM push_devices WHERE endpoint = ${endpoint}`;
-    }
-
-    await auditLog({
-      userId: user.id,
-      action: "push_send",
-      entityType: "notification",
-      newValues: { title, body, sent, failed },
-    });
-
-    return NextResponse.json({ sent, failed, expired: expiredEndpoints.length });
-  } catch (err: any) {
-    console.error(err);
-    return NextResponse.json({ error: err.message || "Erro ao enviar notificações" }, { status: 500 });
-  }
+  const [n] =
+    await sql`INSERT INTO notifications(user_id,client_id,title,message,type,link) VALUES(${user?.id ?? null},${client?.id ?? null},'Teste de notificações','Se você recebeu este alerta, o push está funcionando neste aparelho.','info',${user ? "/admin/notificacoes" : "/cliente"}) RETURNING id`;
+  await sql`INSERT INTO push_jobs(notification_id) VALUES(${n.id})`;
+  const result = await drainPushJobs();
+  const [job] =
+    await sql`SELECT state,last_error FROM push_jobs WHERE notification_id=${n.id}`;
+  return NextResponse.json({
+    state: job.state,
+    configured: result.configured,
+    message:
+      job.state === "accepted"
+        ? "Serviço push aceitou o envio. Confira o aparelho; isso não comprova a entrega."
+        : job.state === "waiting_subscription"
+          ? "Ative as notificações neste aparelho primeiro."
+          : "Envio pendente. A notificação também está salva no aplicativo.",
+  });
 }

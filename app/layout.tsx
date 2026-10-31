@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, Bebas_Neue } from "next/font/google";
 import "./globals.css";
+import ThemeProvider from "@/components/ThemeProvider";
 import InstallApp from "@/components/InstallApp";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -32,10 +33,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${bebasNeue.variable} bg-brand-950 text-slate-100 antialiased`}
       >
+        <ThemeProvider />
         {children}
         <InstallApp />
       </body>

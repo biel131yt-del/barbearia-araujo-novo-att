@@ -1,3 +1,5 @@
+import { drainPushJobs } from "@/lib/push-jobs";
+import { after } from "next/server";
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getAdminUser } from "@/lib/auth";
@@ -45,6 +47,7 @@ export async function PATCH(req: Request) {
         },
         { status: 409 },
       );
+    after(() => drainPushJobs().then(() => {}));
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(

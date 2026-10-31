@@ -27,12 +27,16 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
   await db.exec(read("migrations/001_initial_schema.sql"));
   await db.exec(read("migrations/002_booking_and_sessions.sql"));
   await db.exec(read("migrations/002_booking_and_sessions.sql"));
+  await db.exec(read("migrations/003_notifications_and_whatsapp.sql"));
+  await db.exec(read("migrations/003_notifications_and_whatsapp.sql"));
   console.log("PASS migrations: clean install and safe re-run");
   await db.exec(
     "INSERT INTO clients(name,phone) VALUES('QA','51999999999'); INSERT INTO availability_windows(work_date,start_time,end_time) VALUES('2030-01-02','19:00','23:00');",
   );
   const source = read("app/api/appointments/route.ts");
-  const bookingSql = source.match(/await sql`([\s\S]*?)`;/)[1];
+  const bookingSql = source.match(
+    /const \[appointment\]\s*=\s*await sql`([\s\S]*?)`;/,
+  )[1];
   const tag = async (strings, ...values) =>
     (
       await db.query(
@@ -126,6 +130,25 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
     ).length,
     0,
   );
+  const notificationCount = (
+    await db.query("SELECT count(*)::int AS n FROM notifications")
+  ).rows[0].n;
+  assert.equal(notificationCount, 2);
+  assert.equal(
+    (await db.query("SELECT count(*)::int AS n FROM push_jobs")).rows[0].n,
+    2,
+  );
+  await assert.rejects(
+    book(
+      tag,
+      { id: 1, name: "QA", phone: "51999999999" },
+      1,
+      "2030-01-02",
+      "20:00",
+      3000,
+    ),
+    (e) => e.code === "23505",
+  );
   console.log(
     "PASS booking: saved, overlap rejected, cannot overrun closing, closed days rejected, tampered price rejected",
   );
@@ -136,6 +159,9 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
     (e) => e.code === "23P01",
   );
   console.log("PASS overlap exclusion: database enforces reservation conflict");
+  await db.exec(
+    "UPDATE appointments SET whatsapp_opened_at=NOW(),whatsapp_client_reported_at=NOW()",
+  );
   await db.exec(
     "INSERT INTO service_promotions(service_id,title,price_cents,valid_from,valid_until) VALUES(1,'Oferta',2500,'2030-01-02','2030-01-02')",
   );

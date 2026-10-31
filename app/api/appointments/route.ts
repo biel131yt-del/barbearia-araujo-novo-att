@@ -1,6 +1,9 @@
+import { drainPushJobs } from "@/lib/push-jobs";
+import { after } from "next/server";
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getClientUser } from "@/lib/auth-session";
+import { publicSettings, whatsappUrl } from "@/lib/settings";
 import { validDate } from "@/lib/availability";
 export async function POST(req: Request) {
   const client = await getClientUser();
@@ -10,6 +13,24 @@ export async function POST(req: Request) {
       { status: 401 },
     );
   try {
+    const [pending] =
+      await sql`SELECT id,service_name,appointment_date::text,appointment_time,client_name,price_cents,whatsapp_opened_at FROM appointments WHERE client_id=${client.id} AND whatsapp_required=true AND whatsapp_client_reported_at IS NULL AND status IN ('scheduled','confirmed') ORDER BY created_at DESC LIMIT 1`;
+    const settings = await publicSettings();
+    if (pending)
+      return NextResponse.json(
+        {
+          error:
+            "Envie a mensagem do agendamento pendente antes de reservar outro horário.",
+          pending: {
+            ...pending,
+            whatsapp_url: whatsappUrl(
+              pending as any,
+              settings.telefone_whatsapp,
+            ),
+          },
+        },
+        { status: 409 },
+      );
     const { service_id, date, time, expected_price_cents } = await req.json();
     if (
       !Number.isInteger(expected_price_cents) ||
@@ -23,8 +44,8 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     const [appointment] = await sql`
-      INSERT INTO appointments(client_id, client_name, client_phone, service_id, service_name, price_cents, duration_minutes, appointment_date, appointment_time)
-      SELECT ${client.id}, ${client.name}, ${client.phone}, s.id, s.name, COALESCE(p.price_cents,s.price_cents), s.duration_minutes, ${date}::date, ${time}::time
+      INSERT INTO appointments(client_id, client_name, client_phone, service_id, service_name, price_cents, duration_minutes, appointment_date, appointment_time, whatsapp_required)
+      SELECT ${client.id}, ${client.name}, ${client.phone}, s.id, s.name, COALESCE(p.price_cents,s.price_cents), s.duration_minutes, ${date}::date, ${time}::time, true
       FROM services s LEFT JOIN service_promotions p ON p.service_id=s.id AND p.is_active=true
       AND ${date}::date BETWEEN p.valid_from AND p.valid_until AND p.price_cents<s.price_cents
       WHERE s.id = ${service_id} AND s.is_active = true AND COALESCE(p.price_cents,s.price_cents) = ${expected_price_cents}
@@ -35,7 +56,7 @@ export async function POST(req: Request) {
       AND NOT EXISTS (SELECT 1 FROM appointments a WHERE a.appointment_date = ${date}::date AND a.status NOT IN ('cancelled','no_show')
         AND a.appointment_date + a.appointment_time < ${date}::date + ${time}::time + s.duration_minutes * INTERVAL '1 minute'
         AND a.appointment_date + a.appointment_time + a.duration_minutes * INTERVAL '1 minute' > ${date}::date + ${time}::time)
-      RETURNING id, service_name, price_cents, appointment_date, appointment_time`;
+      RETURNING id, service_name, price_cents, appointment_date::text, appointment_time, client_name`;
     if (!appointment)
       return NextResponse.json(
         {
@@ -44,8 +65,29 @@ export async function POST(req: Request) {
         },
         { status: 409 },
       );
-    return NextResponse.json({ appointment }, { status: 201 });
+    after(() => drainPushJobs().then(() => {}));
+    return NextResponse.json(
+      {
+        appointment,
+        pending: {
+          ...appointment,
+          whatsapp_url: whatsappUrl(
+            appointment as any,
+            settings.telefone_whatsapp,
+          ),
+        },
+      },
+      { status: 201 },
+    );
   } catch (error: any) {
+    if (error.code === "23505")
+      return NextResponse.json(
+        {
+          error:
+            "Você tem uma reserva aguardando envio no WhatsApp. Atualize a página para concluir.",
+        },
+        { status: 409 },
+      );
     if (error.code === "23P01")
       return NextResponse.json(
         { error: "Esse horário acabou de ser reservado. Escolha outro." },
