@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { getAdminUser, auditLog } from "@/lib/auth";
+import { sendPushNotification, listPushDevices } from "@/lib/webpush";
 
 export async function GET(req: Request) {
   const user = await getAdminUser();
@@ -81,6 +82,27 @@ export async function POST(req: Request) {
       entityId: appointment.id,
       newValues: { client_name, service_name, appointment_date, appointment_time },
     });
+
+    // Notificação push automática para novo agendamento
+    try {
+      const devices = await listPushDevices(user.id);
+      for (const device of devices) {
+        await sendPushNotification(
+          {
+            endpoint: device.endpoint,
+            keys: { p256dh: device.p256dh_key, auth: device.auth_key },
+          },
+          {
+            title: "🆕 Novo Agendamento",
+            body: `${client_name} - ${service_name} em ${appointment_date} às ${appointment_time}`,
+            link: "/admin/agenda",
+            type: "info",
+          }
+        );
+      }
+    } catch {
+      // Não falha o agendamento se a notificação der erro
+    }
 
     return NextResponse.json({ appointment }, { status: 201 });
   } catch (err) {
