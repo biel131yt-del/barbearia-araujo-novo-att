@@ -34,7 +34,7 @@ export default function Gallery() {
               viewport={{ once: true }}
               className="relative h-48 rounded-[1.5rem] overflow-hidden border border-white/10 bg-white/5 group cursor-pointer"
             >
-              <div className="absolute inset-0 bg-gradient-to-br {item.color} opacity-[0.85]"></div>
+              <div className={`absolute inset-0 bg-gradient-to-br ${item.color} opacity-[0.85]`}></div>
               <div className="absolute inset-0 bg-[url('https://ui-avatars.com/api/?name=Barber&background=random')] bg-cover bg-center opacity-40 group-hover:opacity-20 transition-opacity duration-500" />
               <div className="absolute inset-0 flex items-end p-6">
                 <div className="flex items-center gap-2 text-white">

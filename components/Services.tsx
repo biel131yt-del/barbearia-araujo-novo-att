@@ -42,6 +42,7 @@ export default function Services() {
               className={`
                 press relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 p-5
                 transition-all duration-300 hover:border-red-500/60 hover:bg-white/10
+                flex flex-col h-full
                 ${service.popular ? "border-red-500/30 bg-red-500/5" : ""}
               `}
             >
@@ -86,24 +87,25 @@ export default function Services() {
                 <p className="font-display text-2xl tracking-wide text-white">
                   {formatPrice(service.price)}
                 </p>
-                <Link
-                  href={WHATSAPP_LINK(`Quero agendar: ${service.name} (${formatPrice(service.price)})`)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <button
-                    className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all active:scale-[0.98] h-11 px-4 text-sm bg-accent text-white shadow-glow-red-sm hover:shadow-glow-red press"
-                    aria-label={`Agendar ${service.name}`}
+                <div className="mt-auto">
+                  <Link
+                    href={WHATSAPP_LINK(`Quero agendar: ${service.name} (${formatPrice(service.price)})`)}
+                    target="_blank"
+                    rel="noopener noreferrer"
                   >
-                    {(() => {
-                      const Icon = ICONS[service.icon] ?? Scissors;
-                      return <Icon className="h-4 w-4" />;
-                    })()}
-                    Agendar
-                  </button>
-                </Link>
+                    <button
+                      className="inline-flex items-center justify-center gap-2 rounded-xl font-semibold transition-all active:scale-[0.98] h-11 px-4 text-sm bg-accent text-white shadow-glow-red-sm hover:shadow-glow-red press"
+                      aria-label={`Agendar ${service.name}`}
+                    >
+                      {(() => {
+                        const Icon = ICONS[service.icon] ?? Scissors;
+                        return <Icon className="h-4 w-4" />;
+                      })()}
+                      Agendar
+                    </button>
+                  </Link>
+                </div>
               </div>
-            </motion.article>
           ))}
         </div>
 

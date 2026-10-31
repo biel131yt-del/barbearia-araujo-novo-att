@@ -8,8 +8,7 @@ import { motion } from "framer-motion";
 export default function Hero() {
   return (
     <section
-      className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-brand-600 via-brand-900 to-brand-950 p-6 text-white md:mt-10 md:grid md:grid-cols-2 md:gap-10 md:p-12"
-      style={{ minHeight: "520px" }}
+      className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-brand-600 via-brand-900 to-brand-950 p-6 md:p-10 text-white md:mt-10 md:grid md:grid-cols-2 md:gap-10 lg:p-12 min-h-[440px] md:min-h-[520px]"
     >
       {/* Decorative scissors pattern */}
       <div className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 opacity-[0.08] md:opacity-[0.12]">
