@@ -1,185 +1,195 @@
 "use client";
-
 import { useEffect, useState } from "react";
-import { Bell, BellOff, CheckCircle } from "lucide-react";
-
-export default function PushSubscription() {
-  const [supported, setSupported] = useState<boolean | null>(null);
-  const [subscribed, setSubscribed] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
+export default function PushSubscription({
+  audience = "admin",
+}: {
+  audience?: "admin" | "client";
+}) {
+  const [supported, setSupported] = useState(false),
+    [installed, setInstalled] = useState(true),
+    [ios, setIos] = useState(false),
+    [subscribed, setSubscribed] = useState(false),
+    [busy, setBusy] = useState(false),
+    [message, setMessage] = useState("");
   useEffect(() => {
-    // Verifica suporte ao Push API
-    if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
-      setSupported(false);
-      return;
-    }
-    setSupported(true);
-
-    // Verifica se já está inscrito
-    navigator.serviceWorker.ready.then((registration) => {
-      registration.pushManager
-        .getSubscription()
-        .then((sub) => {
-          setSubscribed(!!sub);
+    const apple =
+      /iPhone|iPad|iPod/.test(navigator.userAgent) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    setIos(apple);
+    setInstalled(
+      matchMedia("(display-mode: standalone)").matches ||
+        Boolean((navigator as any).standalone),
+    );
+    setSupported(
+      "serviceWorker" in navigator &&
+        "PushManager" in window &&
+        "Notification" in window,
+    );
+    if ("serviceWorker" in navigator)
+      navigator.serviceWorker
+        .register("/sw.js")
+        .then(async (reg) => {
+          const sub = await reg.pushManager.getSubscription();
+          if (sub) {
+            const r = await fetch("/api/push/subscribe?audience=" + audience);
+            if (r.ok) {
+              const d = await r.json();
+              setSubscribed(d.endpoints.includes(sub.endpoint));
+            }
+          }
         })
-        .catch(() => setSubscribed(false));
-    });
-  }, []);
-
-  async function registerServiceWorker() {
-    if (!("serviceWorker" in navigator)) {
-      setError("Service Worker não suportado neste navegador");
-      return;
-    }
-    return navigator.serviceWorker.register("/sw.js");
-  }
-
+        .catch(() => {});
+  }, [audience]);
   async function subscribe() {
-    setLoading(true);
-    setError("");
+    setBusy(true);
+    setMessage("");
     try {
-      const registration = await registerServiceWorker();
-      if (!registration) throw new Error("Service Worker não registrado");
-
-      // Obtém a chave pública VAPID
-      const res = await fetch("/api/push/vapid");
-      if (!res.ok) throw new Error("VAPID não configurado");
-      const { publicKey } = await res.json();
-
-      // Converte a chave para Uint8Array
-      const applicationServerKey = urlBase64ToUint8Array(publicKey);
-
-      const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: applicationServerKey as any,
-      });
-
-      // Envia para o backend
-      const subRes = await fetch("/api/push/subscribe", {
+      const permission = await Notification.requestPermission();
+      if (permission !== "granted")
+        throw new Error(
+          "Permissão não concedida. Ative as notificações nos ajustes do aparelho para este aplicativo.",
+        );
+      const r = await fetch("/api/push/vapid");
+      const d = await r.json();
+      if (!r.ok)
+        throw new Error(
+          "O serviço de notificações ainda precisa ser configurado pelo administrador.",
+        );
+      await navigator.serviceWorker.register("/sw.js");
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise<never>((_, reject) =>
+          setTimeout(
+            () =>
+              reject(
+                new Error(
+                  "O aplicativo ainda está atualizando. Reabra e tente novamente.",
+                ),
+              ),
+            10000,
+          ),
+        ),
+      ]);
+      const key = Uint8Array.from(
+        atob(d.publicKey.replace(/-/g, "+").replace(/_/g, "/")),
+        (c) => c.charCodeAt(0),
+      );
+      const sub =
+        (await reg.pushManager.getSubscription()) ||
+        (await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: key,
+        }));
+      const body = {
+        ...sub.toJSON(),
+        audience,
+        user_agent: navigator.userAgent,
+      };
+      const res = await fetch("/api/push/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          endpoint: subscription.endpoint,
-          keys: {
-            p256dh: btoa(
-              String.fromCharCode(...new Uint8Array(subscription.getKey("p256dh")!))
-            ),
-            auth: btoa(
-              String.fromCharCode(...new Uint8Array(subscription.getKey("auth")!))
-            ),
-          },
-          user_agent: navigator.userAgent,
-        }),
+        body: JSON.stringify(body),
       });
-
-      if (!subRes.ok) throw new Error("Falha ao registrar no servidor");
-
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
       setSubscribed(true);
-      setLoading(false);
-    } catch (err: any) {
-      setError(err.message || "Erro ao ativar notificações");
-      setLoading(false);
+      setMessage(
+        "Notificações ativadas neste aparelho. Use o teste abaixo para conferir.",
+      );
+    } catch (e) {
+      setMessage(
+        e instanceof Error ? e.message : "Falha ao ativar notificações",
+      );
+    } finally {
+      setBusy(false);
     }
   }
-
   async function unsubscribe() {
-    setLoading(true);
+    setBusy(true);
     try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
-      if (subscription) {
-        await fetch("/api/push/subscribe", {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        const r = await fetch("/api/push/subscribe", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ endpoint: subscription.endpoint }),
+          body: JSON.stringify({ audience, endpoint: sub.endpoint }),
         });
-        await subscription.unsubscribe();
+        if (!r.ok) throw new Error("Não foi possível desativar.");
+        await sub.unsubscribe();
       }
       setSubscribed(false);
-      setLoading(false);
-    } catch (err: any) {
-      setError(err.message || "Erro ao desativar notificações");
-      setLoading(false);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Falha de conexão");
+    } finally {
+      setBusy(false);
     }
   }
-
-  if (supported === false) {
-    return (
-      <div className="p-4 rounded-xl border border-gray-100 bg-amber-50">
-        <p className="text-sm text-amber-800 flex items-center gap-2">
-          <BellOff className="h-4 w-4" />
-          Notificações push não são suportadas neste navegador/dispositivo.
-        </p>
-      </div>
-    );
+  async function test() {
+    setBusy(true);
+    try {
+      const r = await fetch("/api/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ audience }),
+      });
+      const d = await r.json();
+      if (!r.ok) throw new Error(d.error);
+      setMessage(d.message);
+    } catch (e) {
+      setMessage(e instanceof Error ? e.message : "Não foi possível testar");
+    } finally {
+      setBusy(false);
+    }
   }
-
   return (
-    <div className="p-4 rounded-xl border border-gray-100 bg-white">
-      <div className="flex items-center justify-between mb-3">
-        <div>
-          <p className="font-medium text-gray-900">Notificações Push</p>
-          <p className="text-xs text-gray-500">
-            Receba alertas de novos agendamentos no seu dispositivo
-          </p>
+    <section className="rounded-2xl border border-gray-200 bg-white text-gray-900 p-4 space-y-3">
+      <h3 className="font-semibold">Notificações neste aparelho</h3>
+      <p className="text-sm text-gray-500">
+        {audience === "admin"
+          ? "Receba alertas de novos agendamentos e alterações."
+          : "Receba atualizações do seu agendamento."}
+      </p>
+      {ios && !installed ? (
+        <div className="rounded-xl bg-blue-50 p-3 text-sm text-blue-900">
+          No iPhone: abra pelo Safari, toque em Compartilhar → Adicionar à Tela
+          de Início. Abra pelo novo ícone e toque em Ativar notificações. Requer
+          iOS 16.4 ou superior.
         </div>
-      </div>
-
-      {subscribed ? (
-        <div className="flex items-center gap-3 p-3 rounded-lg bg-emerald-50">
-          <CheckCircle className="h-4 w-4 text-emerald-600" />
-          <div>
-            <p className="text-sm font-medium text-emerald-800">Notificações ativadas</p>
-            <p className="text-xs text-emerald-700">
-              Você receberá alertas em tempo real
-            </p>
-          </div>
-          <button
-            onClick={unsubscribe}
-            disabled={loading}
-            className="ml-auto text-sm text-rose-600 hover:text-rose-700 font-medium"
-          >
-            Desativar
-          </button>
-        </div>
+      ) : !supported ? (
+        <p className="text-sm text-gray-500">
+          Este navegador não oferece Web Push. As notificações continuam
+          disponíveis dentro do aplicativo.
+        </p>
       ) : (
-        <button
-          onClick={subscribe}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl font-semibold text-white bg-blue-900 hover:bg-blue-800 disabled:opacity-60 transition-all"
-        >
-          {loading ? (
-            <>
-              <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent rounded-full"></span>
-              Ativando...
-            </>
-          ) : (
-            <>
-              <Bell className="h-4 w-4" />
-              Ativar notificações
-            </>
+        <div className="flex flex-wrap gap-2">
+          <button
+            className={subscribed ? "admin-secondary" : "admin-primary"}
+            disabled={busy}
+            onClick={subscribed ? unsubscribe : subscribe}
+          >
+            {busy
+              ? "Aguarde…"
+              : subscribed
+                ? "Desativar notificações"
+                : "Ativar notificações"}
+          </button>
+          {subscribed && (
+            <button className="admin-secondary" disabled={busy} onClick={test}>
+              Enviar teste para este aparelho
+            </button>
           )}
-        </button>
-      )}
-
-      {error && (
-        <div className="mt-3 p-3 rounded-lg border border-rose-100 bg-rose-50">
-          <p className="text-sm text-rose-700">{error}</p>
         </div>
       )}
-    </div>
+      {message && (
+        <p role="status" className="text-sm text-blue-700">
+          {message}
+        </p>
+      )}
+      <p className="text-xs text-gray-500">
+        A entrega depende da permissão, conexão e modo Foco do aparelho. Uma
+        mensagem aceita pelo serviço push pode ainda não ter sido exibida.
+      </p>
+    </section>
   );
-}
-
-function urlBase64ToUint8Array(base64String: string): Uint8Array {
-  const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
-  const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
-  const rawData = window.atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-  for (let i = 0; i < rawData.length; i++) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-  return outputArray;
 }

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { Scissors, Phone, MapPin, Instagram, Facebook } from "lucide-react";
-import { WHATSAPP_LINK } from "@/lib/utils";
+import { usePublicSettings, contactLink } from "@/lib/public-settings";
 
 export default function Footer() {
+  const settings = usePublicSettings();
   return (
     <footer className="mt-16 md:mt-24 border-t border-white/10 bg-brand-950/80 backdrop-blur pt-12 pb-8">
       <div className="container-mobile">
@@ -15,7 +16,7 @@ export default function Footer() {
             </div>
             <div className="leading-tight">
               <p className="font-display text-xl tracking-wide text-white">
-                BARBEARIA ARAUJO
+                {settings.nome_barbearia.toUpperCase()}
               </p>
               <p className="text-[11px] font-medium tracking-widest text-slate-400">
                 ESTILO É ATITUDE
@@ -50,7 +51,7 @@ export default function Footer() {
             <p className="font-bold text-white mb-3">Endereço</p>
             <p className="text-sm text-slate-400 flex items-start gap-2">
               <MapPin className="h-4 w-4 mt-0.5 shrink-0 text-slate-500" />
-              Manoel Olavo da Rosa, 1044
+              {settings.endereco}
             </p>
           </div>
           <div>
@@ -58,12 +59,14 @@ export default function Footer() {
             <p className="text-sm text-slate-400 flex items-center gap-2">
               <Phone className="h-4 w-4 shrink-0 text-slate-500" />
               <a
-                href={WHATSAPP_LINK("Oi!")}
+                href={contactLink(settings.telefone_whatsapp, "Oi!")}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-green-400 hover:text-green-300 transition-colors"
               >
-                (51) 96824-2866
+                {settings.telefone_whatsapp
+                  .replace(/^55/, "")
+                  .replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3")}
               </a>
             </p>
           </div>
@@ -81,7 +84,7 @@ export default function Footer() {
 
         <div className="mt-10 pt-6 border-t border-white/5 text-center">
           <p className="text-xs text-slate-500 tracking-widest uppercase">
-            Barbearia Araujo. Todos os direitos reservados.
+            {settings.nome_barbearia}. Todos os direitos reservados.
           </p>
         </div>
       </div>

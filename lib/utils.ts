@@ -10,7 +10,7 @@ export const formatPrice = (value: number) =>
     value,
   );
 
-export const WHATSAPP_NUMBER = "555196824286";
+export const WHATSAPP_NUMBER = "5551996824286";
 export const WHATSAPP_LINK = (text: string) =>
   `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
 

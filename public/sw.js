@@ -1,47 +1,49 @@
-const CACHE_NAME = "barbearia-araujo-v1";
-
-self.addEventListener("install", (event) => {
-  self.skipWaiting();
-});
-
-self.addEventListener("activate", (event) => {
-  event.waitUntil(self.clients.claim());
-});
-
+self.addEventListener("install", () => self.skipWaiting());
+self.addEventListener("activate", (event) =>
+  event.waitUntil(self.clients.claim()),
+);
 self.addEventListener("push", (event) => {
-  if (!event.data) return;
-
-  const data = event.data.json();
-  const options = {
-    body: data.body || "",
-    icon: "/icon-192.png",
-    badge: "/icon-192.png",
-    tag: data.type || "notification",
-    data: {
-      link: data.link || "/admin",
-      timestamp: data.timestamp || Date.now(),
-    },
-  };
-
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: "Abra o aplicativo para ver a atualização." };
+  }
   event.waitUntil(
-    self.registration.showNotification(data.title || "Barbearia Araújo", options)
+    self.registration.showNotification(data.title || "Barbearia Araújo", {
+      body: data.body || "Você tem uma nova atualização.",
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      tag: data.type || "barbearia",
+      data: { link: data.link || "/cliente" },
+    }),
   );
 });
-
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
-  const link = event.notification.data?.link || "/admin";
-
+  let url;
+  try {
+    url = new URL(
+      event.notification.data?.link || "/cliente",
+      self.location.origin,
+    );
+    if (url.origin !== self.location.origin)
+      url = new URL("/cliente", self.location.origin);
+  } catch {
+    url = new URL("/cliente", self.location.origin);
+  }
   event.waitUntil(
-    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clients) => {
-      for (const client of clients) {
-        if (client.url.includes(link) || client.url.includes("/admin")) {
+    self.clients
+      .matchAll({ type: "window", includeUncontrolled: true })
+      .then(async (clients) => {
+        const client = clients.find(
+          (c) => new URL(c.url).origin === self.location.origin,
+        );
+        if (client) {
+          await client.navigate(url.href);
           return client.focus();
         }
-      }
-      if (self.clients.openWindow) {
-        return self.clients.openWindow(link);
-      }
-    })
+        return self.clients.openWindow(url.href);
+      }),
   );
 });

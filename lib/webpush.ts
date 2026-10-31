@@ -1,9 +1,10 @@
+import { createECDH } from "node:crypto";
 import webpush from "web-push";
 import { sql } from "@/lib/db";
 
 /* ============================================================================
    VAPID KEYS
-   Gere um par de chaves uma única vez e armazene nas settings do Neon.
+   Gere um par de chaves uma única vez e armazene nas variáveis de ambiente da Vercel.
    Para gerar localmente:
      node -e "const w=require('web-push'); console.log(w.generateVAPIDKeys())"
    Depois defina as env vars:
@@ -19,6 +20,13 @@ export function getVapidKeys() {
     return null;
   }
 
+  try {
+    const pair = createECDH("prime256v1");
+    pair.setPrivateKey(Buffer.from(privateKey, "base64url"));
+    if (pair.getPublicKey().toString("base64url") !== publicKey) return null;
+  } catch {
+    return null;
+  }
   return { publicKey, privateKey, email };
 }
 
@@ -26,13 +34,13 @@ export function ensureVapidConfigured() {
   const keys = getVapidKeys();
   if (!keys) {
     throw new Error(
-      "VAPID not configured. Set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_EMAIL environment variables."
+      "VAPID not configured. Set VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_EMAIL environment variables.",
     );
   }
   webpush.setVapidDetails(
     `mailto:${keys.email}`,
     keys.publicKey,
-    keys.privateKey
+    keys.privateKey,
   );
   return keys;
 }
@@ -46,9 +54,9 @@ export async function sendPushNotification(
     endpoint: string;
     keys: { p256dh: string; auth: string };
   },
-  payload: { title: string; body: string; link?: string; type?: string }
+  payload: { title: string; body: string; link?: string; type?: string },
 ) {
-  const keys = ensureVapidConfigured();
+  ensureVapidConfigured();
 
   try {
     await webpush.sendNotification(
@@ -59,12 +67,17 @@ export async function sendPushNotification(
         link: payload.link,
         type: payload.type || "info",
         timestamp: Date.now(),
-      })
+      }),
+      { TTL: 86400, urgency: "high", timeout: 10000 },
     );
     return { success: true };
   } catch (err: any) {
     if (err.statusCode === 410 || err.statusCode === 404) {
-      return { success: false, reason: "subscription_expired", statusCode: err.statusCode };
+      return {
+        success: false,
+        reason: "subscription_expired",
+        statusCode: err.statusCode,
+      };
     }
     throw err;
   }

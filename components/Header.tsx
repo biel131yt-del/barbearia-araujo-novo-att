@@ -2,16 +2,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Scissors, Menu, X } from "lucide-react";
-import { WHATSAPP_LINK } from "@/lib/utils";
+import { usePublicSettings, contactLink } from "@/lib/public-settings";
 export default function Header() {
+  const settings = usePublicSettings();
   const [open, setOpen] = useState(false);
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-brand-950/95 backdrop-blur">
       <div className="container-mobile h-16 flex items-center justify-between gap-4">
         <Link href="/" className="flex items-center gap-3">
-          <Scissors className="text-red-400" />
+          <Scissors className="brand-accent" />
           <span className="font-display text-xl tracking-wide text-white">
-            BARBEARIA ARAÚJO
+            {settings.nome_barbearia.toUpperCase()}
           </span>
         </Link>
         <nav
@@ -58,7 +59,10 @@ export default function Header() {
             </Link>
           ))}
           <a
-            href={WHATSAPP_LINK("Olá! Tenho uma dúvida sobre o atendimento.")}
+            href={contactLink(
+              settings.telefone_whatsapp,
+              "Olá! Tenho uma dúvida sobre o atendimento.",
+            )}
             target="_blank"
             rel="noopener noreferrer"
             className="block rounded-xl px-4 py-3 text-green-400"

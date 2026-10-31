@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { CalendarCheck, MessageCircle as WhatsAppIcon } from "lucide-react";
-import { WHATSAPP_LINK } from "@/lib/utils";
+import { usePublicSettings, contactLink } from "@/lib/public-settings";
 
 export default function CTA() {
+  const settings = usePublicSettings();
   return (
     <section className="mt-16 md:mt-24">
       <div className="container-mobile">
@@ -26,7 +27,8 @@ export default function CTA() {
                 </button>
               </Link>
               <a
-                href={WHATSAPP_LINK(
+                href={contactLink(
+                  settings.telefone_whatsapp,
                   "Olá! Gostaria de saber mais sobre os serviços.",
                 )}
                 target="_blank"

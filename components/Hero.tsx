@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { usePublicSettings } from "@/lib/public-settings";
 import { Star, CalendarCheck, MapPin, Clock, ChevronRight } from "lucide-react";
 import { WHATSAPP_LINK } from "@/lib/utils";
 import { motion } from "framer-motion";
 
 export default function Hero() {
+  const settings = usePublicSettings();
   return (
     <section className="relative overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-brand-600 via-brand-900 to-brand-950 p-6 md:p-10 text-white md:mt-10 md:grid md:grid-cols-2 md:gap-10 lg:p-12 min-h-[440px] md:min-h-[520px]">
       {/* Decorative scissors pattern */}
@@ -48,7 +50,7 @@ export default function Hero() {
         >
           <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] tracking-wide text-center sm:text-left text-balance">
             SEU CORTE PRONTO EM{" "}
-            <span className="text-red-400 font-extrabold">1 CLIQUE.</span>
+            <span className="brand-accent font-extrabold">1 CLIQUE.</span>
           </h1>
         </motion.div>
 
@@ -87,7 +89,7 @@ export default function Hero() {
         <div className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-400">
           <div className="inline-flex items-center gap-1.5">
             <MapPin className="h-3.5 w-3.5" />
-            <span>Manoel Olavo da Rosa, 1044</span>
+            <span>{settings.endereco}</span>
           </div>
           <div className="inline-flex items-center gap-1.5">
             <Clock className="h-3.5 w-3.5" />
