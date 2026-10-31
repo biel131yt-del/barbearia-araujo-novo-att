@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import ClientPasswordReset from "@/components/ClientPasswordReset";
 import { useSession } from "@/lib/session";
 type Client = {
   id: number;
@@ -239,6 +240,9 @@ export default function ClientesPage() {
             >
               Conversar no WhatsApp ↗
             </a>
+            {user.role === "admin" && (
+              <ClientPasswordReset id={c.id} name={c.name} />
+            )}
           </article>
         ))}
       </div>

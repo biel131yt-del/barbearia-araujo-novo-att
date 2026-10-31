@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
-import { getAdminUser } from "@/lib/auth";
+import { getAdminUser, hashPassword } from "@/lib/auth";
 export async function GET() {
   if (!(await getAdminUser()))
     return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -37,4 +37,43 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
+}
+
+export async function PATCH(req: Request) {
+  const admin = await getAdminUser();
+  if (!admin || admin.role !== "admin")
+    return NextResponse.json(
+      { error: "Apenas o administrador pode redefinir senhas." },
+      { status: 403 },
+    );
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Dados inválidos." }, { status: 400 });
+  }
+  const { id, password } = body;
+  if (
+    !Number.isInteger(id) ||
+    id < 1 ||
+    typeof password !== "string" ||
+    password.length < 8 ||
+    password.length > 128
+  )
+    return NextResponse.json(
+      { error: "Informe uma senha de 8 a 128 caracteres." },
+      { status: 400 },
+    );
+  const [client] = await sql`SELECT id FROM clients WHERE id=${id}`;
+  if (!client)
+    return NextResponse.json(
+      { error: "Cliente não encontrado." },
+      { status: 404 },
+    );
+  const hash = await hashPassword(password);
+  await sql.transaction([
+    sql`UPDATE clients SET password_hash=${hash},updated_at=NOW() WHERE id=${id}`,
+    sql`DELETE FROM auth_sessions WHERE kind='client' AND subject_id=${id}`,
+  ]);
+  return NextResponse.json({ ok: true });
 }
