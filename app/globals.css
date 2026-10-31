@@ -1,0 +1,82 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #06182b;
+    --foreground: #f1f5f9;
+    --radius: 0.75rem;
+  }
+
+  body {
+    color: var(--foreground);
+    background: radial-gradient(
+        1200px 600px at 50% -10%,
+        rgba(30, 58, 138, 0.35),
+        transparent 60%
+      ),
+      #06182b;
+    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .font-display {
+    font-family: var(--font-display), "Oswald", sans-serif;
+    letter-spacing: 0.04em;
+  }
+}
+
+@layer components {
+  .container-mobile {
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+    max-width: 28rem;
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+  }
+
+  .press {
+    transition-property: transform;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 0.15s;
+  }
+
+  .press:active {
+    transform: scale(0.97);
+  }
+
+  .shadow-glow-red {
+    box-shadow: 0 0 24px -4px rgba(220, 38, 38, 0.55);
+  }
+
+  .shadow-glow-red-sm {
+    box-shadow: 0 0 12px -2px rgba(220, 38, 38, 0.5);
+  }
+
+  .shadow-card {
+    box-shadow: 0 4px 24px -6px rgba(10, 37, 64, 0.15);
+  }
+
+  .bg-barber {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23ffffff' stroke-opacity='0.05' stroke-width='3' stroke-linecap='round'%3E%3Ccircle cx='38' cy='38' r='9'/%3E%3Ccircle cx='38' cy='82' r='9'/%3E%3Cline x1='46' y1='45' x2='88' y2='82'/%3E%3Cline x1='46' y1='75' x2='88' y2='38'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .riscado {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      transparent,
+      transparent 8px,
+      hsla(0, 0%, 100%, 0.08) 0,
+      hsla(0, 0%, 100%, 0.08) 10px
+    );
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
