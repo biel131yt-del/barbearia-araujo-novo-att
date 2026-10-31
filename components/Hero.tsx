@@ -32,12 +32,12 @@ export default function Hero() {
         </svg>
       </div>
 
-      <div className="relative z-10 flex flex-col gap-4 md:gap-6">
+      <div className="relative z-10 flex flex-col gap-4 md:gap-6 items-center sm:text-center sm:items-start">
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide"
+          className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold tracking-wide sm:ms-0"
         >
           <Star className="h-3.5 w-3.5 fill-yellow-400 text-yellow-400" />
           4.9 ★ • +500 cortes realizados
@@ -47,9 +47,9 @@ export default function Hero() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="mt-2"
+          className="mt-2 sm:mt-4"
         >
-          <h1 className="font-display text-5xl leading-[0.95] tracking-wide md:text-7xl lg:text-8xl text-balance">
+          <h1 className="font-display text-5xl sm:text-6xl md:text-7xl lg:text-8xl leading-[0.95] tracking-wide text-center sm:text-left text-balance">
             SEU CORTE PRONTO EM{" "}
             <span className="text-red-400 font-extrabold">1 CLIQUE.</span>
           </h1>
