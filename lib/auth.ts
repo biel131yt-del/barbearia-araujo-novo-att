@@ -1,55 +1,47 @@
 import { sql } from "@/lib/db";
-import { cookies } from "next/headers";
 import { User } from "@/lib/db";
 import crypto from "crypto";
 
-const SESSION_COOKIE = "barbearia_admin_session";
-const SESSION_MAX_AGE = 7 * 24 * 60 * 60; // 7 dias
-
+import { issueSession, sessionSubject, revokeSession } from "./auth-session";
+import { promisify } from "node:util";
+const scrypt = promisify(crypto.scrypt);
 export async function hashPassword(password: string): Promise<string> {
-  // Usa o crypto do Node.js (disponível em API Routes e Edge)
-  const hashBuffer = crypto.createHash("sha256").update(password).digest();
-  const hashArray = Array.from(new Uint8Array(hashBuffer));
-  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+  const salt = crypto.randomBytes(16).toString("hex");
+  const key = (await scrypt(password, salt, 64)) as Buffer;
+  return `scrypt:${salt}:${key.toString("hex")}`;
 }
-
 export async function verifyPassword(
   plain: string,
-  hash: string
+  hash: string,
 ): Promise<boolean> {
-  const computed = await hashPassword(plain);
-  return computed === hash;
-}
-
-export async function getAdminUser(): Promise<User | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
-
-  try {
-    const [user] = await sql`
-      SELECT * FROM users WHERE email = ${token} AND is_active = true LIMIT 1
-    `;
-    return (user ?? null) as User | null;
-  } catch {
-    return null as User | null;
+  if (typeof plain !== "string" || typeof hash !== "string" || plain.length > 128) return false;
+  if (hash.startsWith("scrypt:")) {
+    const [, salt, value] = hash.split(":");
+    if (!salt || !/^[a-f0-9]{128}$/.test(value || "")) return false;
+    const computed = (await scrypt(plain, salt, 64)) as Buffer;
+    return crypto.timingSafeEqual(computed, Buffer.from(value, "hex"));
   }
+  if (!/^[a-f0-9]{64}$/.test(hash)) return false;
+  return crypto.timingSafeEqual(
+    crypto.createHash("sha256").update(plain).digest(),
+    Buffer.from(hash, "hex"),
+  );
 }
-
-export async function createSession(email: string): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, email, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    maxAge: SESSION_MAX_AGE,
-    path: "/",
-  });
+export async function getAdminUser(): Promise<User | null> {
+  const id = await sessionSubject("admin");
+  if (!id) return null;
+  const [user] =
+    await sql`SELECT id, name, email, role, is_active FROM users WHERE id = ${id} AND is_active = true`;
+  return (user ?? null) as User | null;
 }
-
-export async function destroySession(): Promise<void> {
-  const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+export async function createSession(email: string) {
+  const [user] =
+    await sql`SELECT id FROM users WHERE email = ${email} AND is_active = true`;
+  if (!user) throw new Error("Usuário inválido");
+  await issueSession("admin", user.id);
+}
+export async function destroySession() {
+  await revokeSession("admin");
 }
 
 export async function auditLog({

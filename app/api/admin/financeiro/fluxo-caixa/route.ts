@@ -34,7 +34,7 @@ export async function GET(req: Request) {
   `;
 
   // Movimentações por dia (últimos 30 dias para mes/ano, 1 dia para dia)
-  const dias = periodo === "dia" ? 1 : 30;
+  const dias = periodo === "dia" ? 1 : 366;
   const movimentacoes = await sql`
     SELECT data_mov as data,
            COALESCE(SUM(CASE WHEN tipo = 'entrada' THEN amount_cents ELSE 0 END), 0) as entradas,
@@ -45,7 +45,7 @@ export async function GET(req: Request) {
       SELECT paid_date::date as data_mov, amount_cents, 'saida' as tipo FROM expenses WHERE status = 'paid' AND paid_date >= ${startDate}
     ) t
     GROUP BY data_mov
-    ORDER BY data_mov DESC
+    ORDER BY data_mov ASC
     LIMIT ${dias}
   `;
 

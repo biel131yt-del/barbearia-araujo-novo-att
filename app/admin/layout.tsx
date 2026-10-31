@@ -22,6 +22,7 @@ const MENU_ITEMS = [
   { name: "Agenda", href: "/admin/agenda", icon: Calendar },
   { name: "Clientes", href: "/admin/clientes", icon: Users },
   { name: "Serviços", href: "/admin/servicos", icon: CreditCard },
+  { name: "Promoções", href: "/admin/promocoes", icon: Star },
   { name: "Equipe", href: "/admin/equipe", icon: Users },
   { name: "Financeiro", href: "/admin/financeiro", icon: CreditCard },
   { name: "Estoque", href: "/admin/estoque", icon: Package },
@@ -30,7 +31,11 @@ const MENU_ITEMS = [
   { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
 ];
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const { user, logout } = useSession();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -54,7 +59,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span className="w-8 h-8 rounded-full bg-blue-900 flex items-center justify-center text-white font-bold text-sm">
                 BA
               </span>
-              <span className="font-bold text-lg tracking-tight">Barbearia Araújo</span>
+              <span className="font-bold text-lg tracking-tight">
+                Barbearia Araújo
+              </span>
             </Link>
           </div>
 
@@ -65,13 +72,18 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <span className="w-10 h-10 rounded-xl bg-blue-900 flex items-center justify-center text-white font-bold">
                   BA
                 </span>
-                <span className="font-bold text-xl tracking-tight">Barbearia Araújo</span>
+                <span className="font-bold text-xl tracking-tight">
+                  Barbearia Araújo
+                </span>
               </Link>
             </div>
             <nav className="flex-1 px-4 py-4 space-y-1">
               {MENU_ITEMS.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const isActive =
+                  pathname === item.href ||
+                  (item.href !== "/admin" &&
+                    pathname.startsWith(item.href + "/"));
                 return (
                   <Link
                     key={item.name}
@@ -100,13 +112,21 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
           {/* Mobile Drawer Backdrop */}
           {mobileOpen && (
-            <div className="fixed inset-0 z-30 bg-black/40 md:hidden" onClick={() => setMobileOpen(false)} />
+            <div
+              className="fixed inset-0 z-30 bg-black/40 md:hidden"
+              onClick={() => setMobileOpen(false)}
+            />
           )}
           {/* Mobile Drawer Panel */}
-          <div className={`fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}>
+          <div
+            className={`fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}
+          >
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <span className="font-bold text-lg">Menu</span>
-              <button onClick={() => setMobileOpen(false)} className="text-gray-400 hover:text-gray-600">
+              <button
+                onClick={() => setMobileOpen(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
                 <ArrowLeft className="h-5 w-5" />
               </button>
             </div>
@@ -144,7 +164,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       {/* Main Content - always rendered */}
-      <div className={`md:ml-64 min-h-screen pb-12 ${isLoginPage ? "md:ml-0" : ""}`}>
+      <div
+        className={`md:ml-64 min-h-screen pb-12 ${isLoginPage ? "md:ml-0" : ""}`}
+      >
         <main className="container mx-auto px-4 py-6">{children}</main>
       </div>
     </div>

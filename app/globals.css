@@ -15,13 +15,18 @@
 
   body {
     color: var(--foreground);
-    background: radial-gradient(
+    background:
+      radial-gradient(
         1200px 600px at 50% -10%,
         rgba(30, 58, 138, 0.35),
         transparent 60%
       ),
       #06182b;
-    font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
+    font-family:
+      var(--font-inter),
+      system-ui,
+      -apple-system,
+      sans-serif;
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     min-height: 100vh;
@@ -103,5 +108,20 @@
   .table-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+  }
+}
+
+@layer components {
+  .admin-input {
+    @apply mt-1 w-full rounded-xl border border-gray-300 bg-white px-3 py-2.5 text-gray-900 outline-none focus:ring-2 focus:ring-blue-500;
+  }
+  .admin-label {
+    @apply block text-sm font-medium text-gray-700;
+  }
+  .admin-primary {
+    @apply rounded-xl bg-blue-900 px-4 py-2.5 text-sm font-semibold text-white hover:bg-blue-800 disabled:opacity-50;
+  }
+  .admin-secondary {
+    @apply rounded-xl border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50;
   }
 }

@@ -1,12 +1,13 @@
+import { localDate } from "@/lib/availability";
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 
 export async function GET() {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = localDate();
     const appointments = await sql`
       SELECT * FROM appointments
-      WHERE date = ${today} AND whatsapp_confirmed = FALSE
+      WHERE appointment_date = ${today} AND whatsapp_confirmed = FALSE
     `;
 
     // Aqui você integraria com a API do WhatsApp para enviar lembretes

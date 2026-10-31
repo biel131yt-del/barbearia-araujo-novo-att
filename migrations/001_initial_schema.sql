@@ -46,6 +46,20 @@ CREATE TABLE IF NOT EXISTS barbers (
   updated_at TIMESTAMP DEFAULT NOW()
 );
 
+-- Serviços (preços, duração)
+CREATE TABLE IF NOT EXISTS services (
+  id SERIAL PRIMARY KEY,
+  name TEXT NOT NULL,
+  description TEXT,
+  price_cents INTEGER NOT NULL DEFAULT 0, -- armazenado em centavos para precisão
+  duration_minutes INTEGER NOT NULL DEFAULT 30,
+  is_active BOOLEAN DEFAULT TRUE,
+  is_featured BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT NOW(),
+  updated_at TIMESTAMP DEFAULT NOW()
+);
+
+
 -- Serviços realizados por cada barbeiro
 CREATE TABLE IF NOT EXISTS barber_services (
   id SERIAL PRIMARY KEY,
@@ -87,19 +101,6 @@ CREATE TABLE IF NOT EXISTS blocked_slots (
   end_time TIMESTAMP NOT NULL,
   reason TEXT,
   created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Serviços (preços, duração)
-CREATE TABLE IF NOT EXISTS services (
-  id SERIAL PRIMARY KEY,
-  name TEXT NOT NULL,
-  description TEXT,
-  price_cents INTEGER NOT NULL DEFAULT 0, -- armazenado em centavos para precisão
-  duration_minutes INTEGER NOT NULL DEFAULT 30,
-  is_active BOOLEAN DEFAULT TRUE,
-  is_featured BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
 );
 
 -- Agendamentos (expande tabela existente)

@@ -12,32 +12,12 @@ export async function GET(req: Request) {
   const search = searchParams.get("search");
   const formaPagamento = searchParams.get("forma_pagamento");
 
-  let query = `
-    SELECT r.*, a.client_name, a.service_name
-    FROM revenues r
-    LEFT JOIN appointments a ON r.appointment_id = a.id
-    WHERE 1=1
-  `;
-  const params: any[] = [];
-
-  if (search) {
-    query += ` AND (r.source ILIKE $${params.length + 1} OR a.client_name ILIKE $${params.length + 2})`;
-    params.push(`%${search}%`, `%${search}%`);
-  }
-  if (formaPagamento) {
-    query += ` AND r.payment_method = $${params.length + 1}`;
-    params.push(formaPagamento);
-  }
-
-  query += ` ORDER BY r.received_at DESC LIMIT 100`;
-
-  // Usando sql template com parâmetros simples
   const rows = await sql`
-    SELECT r.*, a.client_name, a.service_name
-    FROM revenues r
-    LEFT JOIN appointments a ON r.appointment_id = a.id
-    ORDER BY r.received_at DESC
-    LIMIT 100
+    SELECT r.*, a.client_name, a.service_name FROM revenues r
+    LEFT JOIN appointments a ON r.appointment_id=a.id
+    WHERE (${search}::text IS NULL OR r.source ILIKE ${`%${search}%`} OR a.client_name ILIKE ${`%${search}%`})
+      AND (${formaPagamento}::text IS NULL OR r.payment_method=${formaPagamento})
+    ORDER BY r.received_at DESC LIMIT 200
   `;
 
   return NextResponse.json({ receitas: rows });
@@ -51,10 +31,29 @@ export async function POST(req: Request) {
 
   try {
     const body = await req.json();
-    const { amount_cents, source, payment_method, received_at, appointment_id, payment_id } = body;
+    const {
+      amount_cents,
+      source,
+      payment_method,
+      received_at,
+      appointment_id,
+      payment_id,
+    } = body;
 
-    if (!amount_cents || !source || !payment_method || !received_at) {
-      return NextResponse.json({ error: "Campos obrigatórios" }, { status: 400 });
+    if (
+      !Number.isInteger(amount_cents) ||
+      amount_cents <= 0 ||
+      !source ||
+      !["cash", "pix", "debit_card", "credit_card", "other"].includes(
+        payment_method,
+      ) ||
+      !received_at ||
+      Number.isNaN(Date.parse(received_at))
+    ) {
+      return NextResponse.json(
+        { error: "Campos obrigatórios" },
+        { status: 400 },
+      );
     }
 
     const [receita] = await sql`
@@ -73,6 +72,9 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ receita }, { status: 201 });
   } catch {
-    return NextResponse.json({ error: "Erro ao registrar receita" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao registrar receita" },
+      { status: 500 },
+    );
   }
 }

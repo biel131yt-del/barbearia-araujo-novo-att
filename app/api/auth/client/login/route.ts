@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { sql } from "@/lib/db";
 import { verifyPassword } from "@/lib/auth";
-import { cookies } from "next/headers";
+import { issueSession } from "@/lib/auth-session";
 
-const CLIENT_SESSION_COOKIE = "barbearia_client_session";
 
 export async function POST(req: Request) {
   try {
@@ -12,18 +11,18 @@ export async function POST(req: Request) {
     if (!phone || !password) {
       return NextResponse.json(
         { error: "Telefone e senha são obrigatórios" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const [client] = await sql`
-      SELECT * FROM clients WHERE phone = ${phone} LIMIT 1
+      SELECT * FROM clients WHERE regexp_replace(phone, '[^0-9]', '', 'g') = ${String(phone).replace(/\D/g, "")} LIMIT 1
     `;
 
     if (!client) {
       return NextResponse.json(
         { error: "Telefone ou senha inválidos" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
@@ -31,26 +30,18 @@ export async function POST(req: Request) {
     if (!valid) {
       return NextResponse.json(
         { error: "Telefone ou senha inválidos" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     if (client.status !== "active") {
       return NextResponse.json(
         { error: "Cliente desativado" },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
-    // Cria sessão do cliente via cookie
-    const cookieStore = await cookies();
-    cookieStore.set(CLIENT_SESSION_COOKIE, String(client.id), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 7 * 24 * 60 * 60,
-      path: "/",
-    });
+    await issueSession("client", client.id);
 
     return NextResponse.json({
       client: {
@@ -61,9 +52,6 @@ export async function POST(req: Request) {
       },
     });
   } catch {
-    return NextResponse.json(
-      { error: "Erro ao fazer login" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Erro ao fazer login" }, { status: 500 });
   }
 }

@@ -12,24 +12,23 @@ export default function CTA() {
           <div className="absolute top-0 left-0 w-full h-[4px] bg-gradient-to-r from-red-500 via-orange-500 to-amber-500" />
           <div className="relative z-10">
             <p className="font-display text-4xl tracking-wide text-red-400 md:text-5xl mb-3">
-              🎁 Corte Grátis
+              Seu próximo visual
             </p>
             <p className="mx-auto mt-2 max-w-md text-sm text-slate-300 md:text-base lg:max-w-lg">
-              Junte cortes e ganhe o próximo por nossa conta. Controle automático
-              no seu agendamento.
+              Escolha seu serviço e reserve um horário disponível pelo
+              aplicativo.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/agendar"
-                className="flex-1 sm:flex-none"
-              >
+              <Link href="/agendar" className="flex-1 sm:flex-none">
                 <button className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl font-semibold transition-all active:scale-[0.98] h-14 px-8 text-lg press w-full bg-accent text-white shadow-glow-red hover:shadow-glow-red hover:brightness-110">
                   <CalendarCheck className="h-5 w-5" />
                   Agendar Agora
                 </button>
               </Link>
               <a
-                href={WHATSAPP_LINK("Quero participar da promoção de corte grátis")}
+                href={WHATSAPP_LINK(
+                  "Olá! Gostaria de saber mais sobre os serviços.",
+                )}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 sm:flex-none"

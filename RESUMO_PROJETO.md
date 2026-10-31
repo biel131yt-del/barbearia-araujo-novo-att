@@ -1,11 +1,13 @@
 # 📋 RESUMO DO PROJETO — Barbearia Araújo (Versão Premium + Painel Administrativo Master)
 
 ## 1. O que é
+
 Adaptação autorizada do site https://app-site-barbearia-araujo.vercel.app/ em uma **plataforma premium de gestão e agendamento**, reconstruída com Next.js 15 + React 19 + Tailwind CSS. Inclui site para clientes, **área do cliente** e um **painel administrativo completo** para controle operacional, financeiro, comercial e administrativo da barbearia.
 
 ---
 
 ## 2. Stack tecnológica
+
 - **Framework:** Next.js 15 (App Router)
 - **React:** 19
 - **Estilização:** Tailwind CSS v3
@@ -19,6 +21,7 @@ Adaptação autorizada do site https://app-site-barbearia-araujo.vercel.app/ em 
 ---
 
 ## 3. Estrutura de pastas
+
 ```
 /app
   ├── layout.tsx              (raiz, fontes, metadata, viewport)
@@ -102,61 +105,67 @@ Adaptação autorizada do site https://app-site-barbearia-araujo.vercel.app/ em 
 ## 4. Rotas e APIs
 
 ### Site público
-| Rota | Descrição |
-|------|-----------|
-| `/` | Página principal premium |
-| `/agendar` | Agendamento em 3 etapas |
+
+| Rota       | Descrição                |
+| ---------- | ------------------------ |
+| `/`        | Página principal premium |
+| `/agendar` | Agendamento em 3 etapas  |
 
 ### Área do cliente
-| Rota | Descrição |
-|------|-----------|
-| `/cliente` | Dashboard: meus agendamentos |
-| `/cliente/login` | Login do cliente |
-| `/cliente/cadastro` | Cadastro do cliente |
+
+| Rota                | Descrição                    |
+| ------------------- | ---------------------------- |
+| `/cliente`          | Dashboard: meus agendamentos |
+| `/cliente/login`    | Login do cliente             |
+| `/cliente/cadastro` | Cadastro do cliente          |
 
 ### API pública
-| Rota | Método | Descrição |
-|------|--------|-----------|
-| `/api/appointments` | POST | Salva agendamento (com fallback WhatsApp) |
-| `/api/lembretes` | GET | Lista agendamentos do dia não confirmados |
+
+| Rota                | Método | Descrição                                 |
+| ------------------- | ------ | ----------------------------------------- |
+| `/api/appointments` | POST   | Salva agendamento (com fallback WhatsApp) |
+| `/api/lembretes`    | GET    | Lista agendamentos do dia não confirmados |
 
 ### API cliente
-| Rota | Método | Descrição |
-|------|--------|-----------|
-| `/api/auth/client/register` | POST | Cadastro de cliente |
-| `/api/auth/client/login` | POST | Login do cliente (cookie de sessão) |
-| `/api/auth/client/me` | GET | Verificar sessão do cliente |
-| `/api/auth/client/logout` | POST | Logout do cliente |
-| `/api/cliente/appointments` | GET | Agendamentos do cliente logado |
+
+| Rota                        | Método | Descrição                           |
+| --------------------------- | ------ | ----------------------------------- |
+| `/api/auth/client/register` | POST   | Cadastro de cliente                 |
+| `/api/auth/client/login`    | POST   | Login do cliente (cookie de sessão) |
+| `/api/auth/client/me`       | GET    | Verificar sessão do cliente         |
+| `/api/auth/client/logout`   | POST   | Logout do cliente                   |
+| `/api/cliente/appointments` | GET    | Agendamentos do cliente logado      |
 
 ### Área administrativa (protegida por middleware)
-| Rota | Método | Descrição |
-|------|--------|-----------|
-| `/admin/login` | GET/POST | Login do administrador |
-| `/api/auth/me` | GET | Verificar sessão admin |
-| `/api/auth/logout` | POST | Logout admin |
-| `/api/admin/dashboard` | GET | Indicadores do dashboard |
-| `/api/admin/appointments` | GET/POST | Agendamentos |
-| `/api/admin/clients` | GET/POST | Clientes CRM |
-| `/api/admin/services` | GET/POST | Serviços e preços |
-| `/api/admin/barbers` | GET | Equipe de barbeiros |
-| `/api/admin/estoque` | GET/POST | Produtos e estoque |
-| `/api/admin/financeiro` | GET | Dashboard financeiro |
-| `/api/admin/financeiro/receitas` | GET/POST | Receitas |
-| `/api/admin/financeiro/despesas` | GET/POST | Despesas |
-| `/api/admin/financeiro/fluxo-caixa` | GET | Fluxo de caixa por período |
+
+| Rota                                | Método   | Descrição                    |
+| ----------------------------------- | -------- | ---------------------------- |
+| `/admin/login`                      | GET/POST | Login do administrador       |
+| `/api/auth/me`                      | GET      | Verificar sessão admin       |
+| `/api/auth/logout`                  | POST     | Logout admin                 |
+| `/api/admin/dashboard`              | GET      | Indicadores do dashboard     |
+| `/api/admin/appointments`           | GET/POST | Agendamentos                 |
+| `/api/admin/clients`                | GET/POST | Clientes CRM                 |
+| `/api/admin/services`               | GET/POST | Serviços e preços            |
+| `/api/admin/barbers`                | GET      | Equipe de barbeiros          |
+| `/api/admin/estoque`                | GET/POST | Produtos e estoque           |
+| `/api/admin/financeiro`             | GET      | Dashboard financeiro         |
+| `/api/admin/financeiro/receitas`    | GET/POST | Receitas                     |
+| `/api/admin/financeiro/despesas`    | GET/POST | Despesas                     |
+| `/api/admin/financeiro/fluxo-caixa` | GET      | Fluxo de caixa por período   |
 | `/api/admin/financeiro/fechamentos` | GET/POST | Fechamentos diários de caixa |
-| `/api/admin/avaliacoes` | GET | Avaliações |
-| `/api/admin/notifications` | GET/POST | Notificações admin |
-| `/api/admin/configuracoes` | GET | Configurações do sistema |
+| `/api/admin/avaliacoes`             | GET      | Avaliações                   |
+| `/api/admin/notifications`          | GET/POST | Notificações admin           |
+| `/api/admin/configuracoes`          | GET      | Configurações do sistema     |
 
 ### Web Push (VAPID)
-| Rota | Método | Descrição |
-|------|--------|-----------|
-| `/api/push/vapid` | GET | Retorna chave pública VAPID |
-| `/api/push/subscribe` | POST/DELETE | Inscreve/remove dispositivo push |
-| `/api/push/send` | POST | Envia notificação push para todos os dispositivos |
-| `/api/push/devices` | GET | Lista dispositivos inscritos |
+
+| Rota                  | Método      | Descrição                                         |
+| --------------------- | ----------- | ------------------------------------------------- |
+| `/api/push/vapid`     | GET         | Retorna chave pública VAPID                       |
+| `/api/push/subscribe` | POST/DELETE | Inscreve/remove dispositivo push                  |
+| `/api/push/send`      | POST        | Envia notificação push para todos os dispositivos |
+| `/api/push/devices`   | GET         | Lista dispositivos inscritos                      |
 
 ---
 
@@ -188,35 +197,44 @@ Tabelas usam `IF NOT EXISTS` e seeds seguros (não sobrescrevem dados existentes
 ## 6. Módulos implementados
 
 ### 6.1. Site Público
+
 - Hero, Serviços (com preços), Como Funciona, Agendamento, Depoimentos, Galeria, CTA, Footer
 - Responsivo (mobile-first)
 
 ### 6.2. Área do Cliente
+
 - Cadastro e login com sessão de cookie
 - Dashboard com lista de seus agendamentos (status, valor, pagamento)
 - Botão para novo agendamento
 
 ### 6.3. Painel Administrativo
+
 - Sidebar responsiva (desktop) + menu mobile (drawer)
 - 12 módulos: Visão Geral, Agenda, Clientes, Serviços, Equipe, Financeiro, Estoque, Avaliações, Notificações, Configurações
 - Logout, indicadores, estados vazios
 
 ### 6.4. Dashboard Principal
+
 Indicadores calculados a partir de dados reais do Neon: agendamentos de hoje, próximos, concluídos, cancelados, receita recebida, receita prevista, resultado operacional, novos clientes, avaliação média.
 
 ### 6.5. Agenda Profissional
+
 Listagem com filtros por data e busca, status visual, criação manual via API.
 
 ### 6.6. Clientes (CRM)
+
 Lista com total de atendimentos, total gasto, status, busca por nome/telefone.
 
 ### 6.7. Serviços e Preços
+
 Grid de serviços com preço, duração, destaque, criação via API.
 
 ### 6.8. Equipe (Barbeiros)
+
 Lista de barbeiros com tipo de comissão, status ativo/inativo.
 
 ### 6.9. Financeiro Completo
+
 - **Receitas:** cadastro, listagem, filtro por origem/forma pagamento
 - **Despesas:** cadastro, listagem, filtro por categoria/status, alerta de vencidas
 - **Fluxo de Caixa:** entradas, saídas, saldo final, movimentações por dia
@@ -224,15 +242,19 @@ Lista de barbeiros com tipo de comissão, status ativo/inativo.
 - **Valores em centavos** (precisão monetária, sem ponto flutuante inadequado)
 
 ### 6.10. Estoque e Produtos
+
 Cadastro de produtos, alerta de estoque baixo, histórico de movimentações.
 
 ### 6.11. Avaliações
+
 Avaliação média, total, lista com estrelas e comentários.
 
 ### 6.12. Notificações (Central Administrativa)
+
 Lista de notificações internas com status de leitura e link para tela respectiva.
 
 ### 6.13. Web Push (VAPID)
+
 - Chave pública VAPID exposta via API
 - Registro/remoção de dispositivos (Service Worker + pushManager)
 - Envio de notificações para todos os dispositivos do usuário
@@ -240,11 +262,13 @@ Lista de notificações internas com status de leitura e link para tela respecti
 - Componente `PushSubscription` na página de Configurações
 
 ### 6.14. Configurações
+
 Configurações do sistema, segurança, notificações push.
 
 ---
 
 ## 7. Segurança e Auditoria
+
 - **Middleware** protege todas as rotas `/admin` (exige sessão)
 - **Autenticação admin** via cookie de sessão (httpOnly, secure em produção)
 - **Autenticação cliente** via cookie de sessão
@@ -255,6 +279,7 @@ Configurações do sistema, segurança, notificações push.
 ---
 
 ## 8. Status atual
+
 - ✅ Código completo e funcional
 - ✅ `npm run build` passa sem erros (Next.js 15, TypeScript 5)
 - ✅ 51 rotas estáticas/dinâmicas, 29 APIs
@@ -272,12 +297,12 @@ Configurações do sistema, segurança, notificações push.
 
 ## 9. Variáveis de ambiente necessárias
 
-| Variável | Valor |
-|----------|-------|
-| `DATABASE_URL` | `postgresql://neondb_owner:npg_oOfXpCnM42cW@ep-delicate-term-b6nfw6sk-pooler.c-2.sa-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require` |
-| `VAPID_PUBLIC_KEY` | (opcional) Gerar com `web-push generateVAPIDKeys()` |
+| Variável            | Valor                                               |
+| ------------------- | --------------------------------------------------- |
+| `DATABASE_URL`      | `[CONFIGURAR DATABASE_URL NA VERCEL]`               |
+| `VAPID_PUBLIC_KEY`  | (opcional) Gerar com `web-push generateVAPIDKeys()` |
 | `VAPID_PRIVATE_KEY` | (opcional) Gerar com `web-push generateVAPIDKeys()` |
-| `VAPID_EMAIL` | (opcional) Ex: admin@barbeariaaraujo.com |
+| `VAPID_EMAIL`       | (opcional) Ex: admin@barbeariaaraujo.com            |
 
 ---
 
@@ -287,10 +312,12 @@ Configurações do sistema, segurança, notificações push.
    - Conectar no Neon e rodar o SQL de `migrations/001_initial_schema.sql`
 
 2. **Vercel:**
+
    ```
    vercel login
    vercel deploy --prod
    ```
+
    Ou conectar repositório Git no dashboard da Vercel.
 
 3. **Variáveis de ambiente na Vercel:**
@@ -310,6 +337,7 @@ Configurações do sistema, segurança, notificações push.
 ---
 
 ## 11. Créditos / observações
+
 - Desenvolvido preservando integralmente o site público existente
 - Identidade visual da Barbearia Araújo mantida
 - Número WhatsApp: 555196824286
