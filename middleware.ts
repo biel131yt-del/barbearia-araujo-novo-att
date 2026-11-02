@@ -7,19 +7,32 @@ export async function middleware(req: NextRequest) {
   // Rotas administrativas exigem sessão
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login" || pathname === "/api/auth/login") {
-      return NextResponse.next();
+      const requestHeaders = new Headers(req.headers);
+      requestHeaders.set("x-barbearia-page", pathname);
+      return NextResponse.next({ request: { headers: requestHeaders } });
     }
 
     const cookieStore = await req.cookies;
     const token = cookieStore.get("barbearia_admin_session")?.value;
     if (!token) {
-      return NextResponse.redirect(new URL("/admin/login", req.url));
+      const login = new URL("/admin/login", req.url);
+      login.searchParams.set("next", pathname);
+      return NextResponse.redirect(login);
     }
   }
 
-  return NextResponse.next();
+  const requestHeaders = new Headers(req.headers);
+  requestHeaders.set("x-barbearia-page", pathname);
+  return NextResponse.next({ request: { headers: requestHeaders } });
 }
 
 export const config = {
-  matcher: ["/admin/:path*", "/api/auth/me", "/api/auth/logout"],
+  matcher: [
+    "/",
+    "/agendar",
+    "/cliente/:path*",
+    "/admin/:path*",
+    "/api/auth/me",
+    "/api/auth/logout",
+  ],
 };

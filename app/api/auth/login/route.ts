@@ -38,6 +38,12 @@ export async function POST(req: Request) {
       );
     }
 
+    if (user.role !== "admin")
+      return NextResponse.json(
+        { error: "Acesso exclusivo do administrador." },
+        { status: 403 },
+      );
+
     if (!user.is_active) {
       return NextResponse.json(
         { error: "Usuário desativado" },

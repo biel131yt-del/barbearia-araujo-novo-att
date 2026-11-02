@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession } from "@/lib/session";
 import {
+  Download,
   LayoutDashboard,
   Calendar,
   Users,
@@ -29,6 +30,7 @@ const MENU_ITEMS = [
   { name: "Avaliações", href: "/admin/avaliacoes", icon: Star },
   { name: "Notificações", href: "/admin/notificacoes", icon: Star },
   { name: "Configurações", href: "/admin/configuracoes", icon: Settings },
+  { name: "Instalar app admin", href: "/admin/instalar", icon: Download },
 ];
 
 export default function AdminLayout({
@@ -77,7 +79,7 @@ export default function AdminLayout({
                 </span>
               </Link>
             </div>
-            <nav className="flex-1 px-4 py-4 space-y-1">
+            <nav className="flex-1 min-h-0 overflow-y-auto px-4 py-4 space-y-1">
               {MENU_ITEMS.map((item) => {
                 const Icon = item.icon;
                 const isActive =
@@ -119,7 +121,7 @@ export default function AdminLayout({
           )}
           {/* Mobile Drawer Panel */}
           <div
-            className={`fixed inset-y-0 left-0 z-40 w-72 bg-white border-r border-gray-200 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}
+            className={`fixed inset-y-0 left-0 z-40 w-72 overflow-y-auto bg-white border-r border-gray-200 transform transition-transform duration-300 ${mobileOpen ? "translate-x-0" : "-translate-x-full"} md:hidden`}
           >
             <div className="p-4 border-b border-gray-200 flex items-center justify-between">
               <span className="font-bold text-lg">Menu</span>

@@ -27,7 +27,11 @@ export default function LoginPage() {
         setLoading(false);
         return;
       }
-      router.push("/admin");
+      const next =
+        new URLSearchParams(window.location.search).get("next") || "/admin";
+      router.push(
+        /^\/admin(?:\/|$)/.test(next) && !next.includes("\\") ? next : "/admin",
+      );
     } catch {
       setError("Erro ao conectar com o servidor");
       setLoading(false);

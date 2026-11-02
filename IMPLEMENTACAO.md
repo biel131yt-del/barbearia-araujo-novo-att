@@ -47,3 +47,11 @@ Testes locais e APIs na branch isolada cobriram calendário mensal, reserva e co
 - A DATABASE_URL removida do antigo resumo ainda existe no histórico público do repositório: rotacionar a credencial no Neon e atualizar os ambientes da Vercel.
 - Fotos continuam por URL HTTPS; não há upload de arquivos, pagamento online ou agendamento offline.
 - Contas antigas sem senha precisam de um processo de convite/recuperação com verificação.
+
+## Instalação separada no iPhone — 02/11/2026
+
+No Safari, abrir /admin/instalar, entrar com a conta admin e usar Compartilhar → Adicionar à Tela de Início. O ícone Araújo Admin tem identidade própria e inicia em /admin; o app de clientes mantém sua identidade e inicia em /cliente. Os dois podem coexistir. Uma nova instalação pode pedir login novamente.
+
+O manifesto administrativo exige uma sessão ativa com role admin, usa credenciais no link e não pode ser armazenado em cache compartilhado. Clientes, visitantes e cookies inválidos não obtêm esse manifesto nem as páginas administrativas. As APIs administrativas também exigem role admin. A instalação não concede privilégios. O iPhone ainda permite salvar qualquer URL como atalho: isso não libera o painel.
+
+Validado no navegador e por HTTP: manifesto público, manifesto admin autenticado, páginas de instalação, credenciais no HTML, bloqueio de clientes/visitantes/cookies falsos e revogação após logout. Confirmar a instalação final no iPhone físico.

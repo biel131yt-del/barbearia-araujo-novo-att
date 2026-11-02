@@ -36,9 +36,14 @@ self.addEventListener("notificationclick", (event) => {
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then(async (clients) => {
-        const client = clients.find(
-          (c) => new URL(c.url).origin === self.location.origin,
-        );
+        const client = clients.find((c) => {
+          const opened = new URL(c.url);
+          return (
+            opened.origin === self.location.origin &&
+            opened.pathname.startsWith("/admin") ===
+              url.pathname.startsWith("/admin")
+          );
+        });
         if (client) {
           await client.navigate(url.href);
           return client.focus();

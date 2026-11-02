@@ -14,7 +14,12 @@ export async function verifyPassword(
   plain: string,
   hash: string,
 ): Promise<boolean> {
-  if (typeof plain !== "string" || typeof hash !== "string" || plain.length > 128) return false;
+  if (
+    typeof plain !== "string" ||
+    typeof hash !== "string" ||
+    plain.length > 128
+  )
+    return false;
   if (hash.startsWith("scrypt:")) {
     const [, salt, value] = hash.split(":");
     if (!salt || !/^[a-f0-9]{128}$/.test(value || "")) return false;
@@ -31,7 +36,7 @@ export async function getAdminUser(): Promise<User | null> {
   const id = await sessionSubject("admin");
   if (!id) return null;
   const [user] =
-    await sql`SELECT id, name, email, role, is_active FROM users WHERE id = ${id} AND is_active = true`;
+    await sql`SELECT id, name, email, role, is_active FROM users WHERE id = ${id} AND is_active = true AND role = 'admin'`;
   return (user ?? null) as User | null;
 }
 export async function createSession(email: string) {
