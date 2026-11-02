@@ -113,7 +113,7 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
         { id: 1, name: "QA", phone: "51999999999" },
         1,
         "2030-01-02",
-        "20:00",
+        "20:20",
         1,
       )
     ).length,
@@ -146,7 +146,7 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
       { id: 1, name: "QA", phone: "51999999999" },
       1,
       "2030-01-02",
-      "20:00",
+      "20:20",
       3000,
     ),
     (e) => e.code === "23505",
@@ -172,7 +172,7 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
     { id: 1, name: "QA", phone: "51999999999" },
     1,
     "2030-01-02",
-    "20:00",
+    "20:20",
     2500,
   );
   assert.equal(rows[0].price_cents, 2500);
@@ -292,7 +292,7 @@ test("horários consideram intervalos, duração, ocupação e fim do expediente
   assert(!slots.includes("19:40"));
   assert(!slots.includes("20:10"));
   assert(!slots.includes("21:00"));
-  assert(slots.includes("22:00"));
+  assert(slots.includes("22:20"));
   assert(!slots.includes("22:30"));
 });
 test("datas e horários usam Brasília e rejeitam datas inválidas", () => {
@@ -307,7 +307,49 @@ test("datas e horários usam Brasília e rejeitam datas inválidas", () => {
     new Date("2030-01-02T22:00:00Z"),
   );
   assert(!slots.includes("19:00"));
-  assert(slots.includes("19:15"));
+  assert(slots.includes("19:30"));
+  assert(!slots.includes("19:15"));
+});
+
+test("inícios seguem a duração do serviço, nunca intervalos de quinze minutos", () => {
+  const windows = [{ start_time: "19:00", end_time: "23:00" }];
+  const now = new Date("2030-01-01T12:00:00Z");
+  assert.deepEqual(availableSlots("2030-01-02", windows, [], 60, now), [
+    "19:00",
+    "20:00",
+    "21:00",
+    "22:00",
+  ]);
+  assert.deepEqual(availableSlots("2030-01-02", windows, [], 30, now), [
+    "19:00",
+    "19:30",
+    "20:00",
+    "20:30",
+    "21:00",
+    "21:30",
+    "22:00",
+    "22:30",
+  ]);
+  assert.deepEqual(
+    availableSlots(
+      "2030-01-02",
+      windows,
+      [{ appointment_time: "19:30", duration_minutes: 60 }],
+      60,
+      now,
+    ),
+    ["21:00", "22:00"],
+  );
+  assert.deepEqual(availableSlots("2030-01-02", windows, [], 20, now), [
+    "19:00",
+    "19:30",
+    "20:00",
+    "20:30",
+    "21:00",
+    "21:30",
+    "22:00",
+    "22:30",
+  ]);
 });
 
 test("senhas têm salt individual e preservam validação do hash legado", async () => {

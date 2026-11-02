@@ -68,3 +68,10 @@ Implantação: aplicar migration 004 depois de 001–003, habilitar System Envir
 A migration 004 foi testada e aplicada ao Neon após backup br-raspy-truth-b6rgo96t. Ela também prepara convites dos atendimentos concluídos nas últimas 24 horas, preservando o prazo original de 30 minutos e dispensando quem já avaliou.
 
 Validação: autorização e titularidade da avaliação, notas/comentários inválidos, duplicação, persistência no cliente/admin; espera real do Workflow e retomada com relógio acelerado exclusivamente na branch de teste; supressão de convites antes do prazo/já avaliados e criação sem duplicação. Push no iPhone físico requer o teste no aparelho. O cron diário continua como recuperação de agendamentos que falhem ao iniciar, sem limitar o Workflow a uma execução por dia.
+## Agenda simplificada — 02/11/2026
+
+Abrir dias agora usa dois passos: escolher os dias e informar começo/término. Atalhos: Só hoje, Só amanhã, Próximos 7 dias, Semana seguinte e turnos Manhã/Tarde/Noite. Pausas ficam em uma opção separada. Dias abertos podem ser alterados ou fechados; reservas existentes são preservadas.
+
+A lista de inícios segue a duração do serviço, com mínimo de 30 minutos entre opções. Serviço de 30 minutos oferece 19:00, 19:30 etc.; serviço de 60 oferece 19:00, 20:00 etc. Serviços de 40/50 continuam usando a duração cadastrada, sem alterar seus preços ou reservas antigas. O servidor valida a mesma regra e impede sobreposições. O tempo pode ser ajustado em Serviços, por serviço.
+
+Validação: cinco testes automatizados, incluindo cadência de 30/60 minutos, ocupação existente e encaixe no fim do período. APIs na branch isolada confirmaram 30/40/50/60 minutos, recusa de início 19:15 e bloqueio de uma hora inteira. Abertura de sete dias à noite conferida no navegador, na base de teste.

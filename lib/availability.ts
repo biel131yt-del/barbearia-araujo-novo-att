@@ -33,7 +33,7 @@ export function availableSlots(
     for (
       let start = minutes(window.start_time);
       start + duration <= minutes(window.end_time);
-      start += 15
+      start += Math.max(30, duration)
     ) {
       const time = timeLabel(start);
       if (new Date(`${date}T${time}:00-03:00`) <= now) continue;

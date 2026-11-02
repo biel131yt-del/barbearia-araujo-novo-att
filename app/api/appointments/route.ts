@@ -52,7 +52,7 @@ export async function POST(req: Request) {
       AND (${date}::date + ${time}::time) AT TIME ZONE 'America/Sao_Paulo' > NOW()
       AND EXISTS (SELECT 1 FROM availability_windows w WHERE w.work_date = ${date}::date
         AND ${time}::time >= w.start_time AND ${date}::date + ${time}::time + s.duration_minutes * INTERVAL '1 minute' <= w.work_date + w.end_time
-        AND EXTRACT(EPOCH FROM (${time}::time - w.start_time))::int % 900 = 0)
+        AND EXTRACT(EPOCH FROM (${time}::time - w.start_time))::int % (GREATEST(30,s.duration_minutes)*60) = 0)
       AND NOT EXISTS (SELECT 1 FROM appointments a WHERE a.appointment_date = ${date}::date AND a.status NOT IN ('cancelled','no_show')
         AND a.appointment_date + a.appointment_time < ${date}::date + ${time}::time + s.duration_minutes * INTERVAL '1 minute'
         AND a.appointment_date + a.appointment_time + a.duration_minutes * INTERVAL '1 minute' > ${date}::date + ${time}::time)
