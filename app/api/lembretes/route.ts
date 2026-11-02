@@ -1,3 +1,4 @@
+import { scheduleReviewRequests } from "@/lib/review-scheduler";
 import { getAdminUser } from "@/lib/auth";
 import { localDate } from "@/lib/availability";
 import { drainPushJobs } from "@/lib/push-jobs";
@@ -20,6 +21,7 @@ export async function GET(req: Request) {
 
     console.log(`Lembretes para ${today}:`, appointments.length);
 
+    await scheduleReviewRequests();
     const push = await drainPushJobs();
     return NextResponse.json({ count: appointments.length, push });
   } catch (error) {

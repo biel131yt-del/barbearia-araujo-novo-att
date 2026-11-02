@@ -29,6 +29,8 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
   await db.exec(read("migrations/002_booking_and_sessions.sql"));
   await db.exec(read("migrations/003_notifications_and_whatsapp.sql"));
   await db.exec(read("migrations/003_notifications_and_whatsapp.sql"));
+  await db.exec(read("migrations/004_unique_appointment_review.sql"));
+  await db.exec(read("migrations/004_unique_appointment_review.sql"));
   console.log("PASS migrations: clean install and safe re-run");
   await db.exec(
     "INSERT INTO clients(name,phone) VALUES('QA','51999999999'); INSERT INTO availability_windows(work_date,start_time,end_time) VALUES('2030-01-02','19:00','23:00');",
@@ -199,6 +201,76 @@ test("migrações, reservas, promoção e receita sem duplicação", async () =>
   );
   console.log(
     "PASS financial: completion posts revenue once, repeated request rejected",
+  );
+  const reminder = (
+    await db.query(
+      "SELECT rr.appointment_id,EXTRACT(EPOCH FROM (rr.due_at-a.completed_at))::int AS delay FROM review_requests rr JOIN appointments a ON a.id=rr.appointment_id",
+    )
+  ).rows;
+  assert.equal(reminder.length, 1);
+  assert.equal(reminder[0].delay, 1800);
+  const reviewSql = read("app/api/cliente/reviews/route.ts").match(
+    /const \[review\]\s*=\s*await sql`([\s\S]*?)`;/,
+  )[1];
+  const review = Function(
+    "sql",
+    "client",
+    "appointment_id",
+    "rating",
+    "comment",
+    "return sql`" + reviewSql + "`",
+  );
+  assert.equal(
+    (await review(tag, { id: 999 }, rows[0].id, 5, "Outro cliente")).length,
+    0,
+  );
+  assert.equal(
+    (await review(tag, { id: 1 }, 1, 5, "Ainda agendado")).length,
+    0,
+  );
+  assert.equal(
+    (await review(tag, { id: 1 }, rows[0].id, 5, "Ótimo")).length,
+    1,
+  );
+  await assert.rejects(
+    review(tag, { id: 1 }, rows[0].id, 4, "Duplicado"),
+    (e) => e.code === "23505",
+  );
+  const deliverSql = read("workflows/review-steps.ts").match(
+    /await sql`(WITH eligible[\s\S]*?)`;/,
+  )[1];
+  const deliver = Function(
+    "sql",
+    "appointmentId",
+    "return sql`" + deliverSql + "`",
+  );
+  await deliver(tag, rows[0].id);
+  assert.equal(
+    (await db.query("SELECT notification_id FROM review_requests")).rows[0]
+      .notification_id,
+    null,
+  );
+  await db.exec("UPDATE reviews SET appointment_id=NULL");
+  await deliver(tag, rows[0].id);
+  assert.equal(
+    (await db.query("SELECT notification_id FROM review_requests")).rows[0]
+      .notification_id,
+    null,
+  );
+  await db.exec("UPDATE review_requests SET due_at=NOW()-INTERVAL '1 minute'");
+  await deliver(tag, rows[0].id);
+  const notification = (
+    await db.query("SELECT notification_id FROM review_requests")
+  ).rows[0].notification_id;
+  assert(notification);
+  await deliver(tag, rows[0].id);
+  assert.equal(
+    (await db.query("SELECT notification_id FROM review_requests")).rows[0]
+      .notification_id,
+    notification,
+  );
+  console.log(
+    "PASS reviews: owner only, completed only, unique review; reminder delayed 1800s, skips reviewed, does not send early or duplicate",
   );
   await db.close();
 });

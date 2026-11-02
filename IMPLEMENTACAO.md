@@ -55,3 +55,16 @@ No Safari, abrir /admin/instalar, entrar com a conta admin e usar Compartilhar �
 O manifesto administrativo exige uma sessão ativa com role admin, usa credenciais no link e não pode ser armazenado em cache compartilhado. Clientes, visitantes e cookies inválidos não obtêm esse manifesto nem as páginas administrativas. As APIs administrativas também exigem role admin. A instalação não concede privilégios. O iPhone ainda permite salvar qualquer URL como atalho: isso não libera o painel.
 
 Validado no navegador e por HTTP: manifesto público, manifesto admin autenticado, páginas de instalação, credenciais no HTML, bloqueio de clientes/visitantes/cookies falsos e revogação após logout. Confirmar a instalação final no iPhone físico.
+## Avaliações e convite após o atendimento — 02/11/2026
+
+A conta do cliente exibe Avalie seu atendimento para reservas concluídas. Cada atendimento aceita uma nota inteira de 1 a 5 e comentário opcional de até 1000 caracteres, somente do titular. O cliente vê sua avaliação salva; o dono consulta em Avaliações. Ao voltar à aba, a conta atualiza os atendimentos.
+
+Ao marcar Concluído, a conclusão e o pedido de lembrete são registrados na mesma transação. O prazo é de 30 minutos contados de completed_at, não do horário originalmente agendado. Vercel Workflow mantém uma espera durável no servidor. Após o prazo, se ainda não houver avaliação, cria notificação interna e trabalho push com link direto ao formulário. A criação é idempotente. Avaliar antes dispensa o convite; avaliar com envio ainda pendente cancela o trabalho de push correspondente. Não é possível recolher uma mensagem que já tenha sido aceita pelo provedor.
+
+O convite de ativação aparece ao entrar no site; a permissão nativa exige toque do usuário. No iPhone, instalar na Tela de Início e abrir pelo ícone é necessário para Web Push (iOS 16.4+). A recusa e o botão Agora não são respeitados. Permissões já concedidas podem ser vinculadas à conta ao entrar, mas a desativação manual não é revertida automaticamente. A entrega depende do sistema, rede, Foco e permissões.
+
+Implantação: aplicar migration 004 depois de 001–003, habilitar System Environment Variables no projeto Vercel e publicar com workflow/next. Não interceptar /.well-known/workflow/ no middleware. O manifesto e os endpoints internos de Workflow são gerados pelo SDK. O package.json não força commonjs, para os arquivos ESM gerados pelo SDK serem compilados corretamente. O cliente HTTP undici usa a linha corrigida 7.30.1+.
+
+A migration 004 foi testada e aplicada ao Neon após backup br-raspy-truth-b6rgo96t. Ela também prepara convites dos atendimentos concluídos nas últimas 24 horas, preservando o prazo original de 30 minutos e dispensando quem já avaliou.
+
+Validação: autorização e titularidade da avaliação, notas/comentários inválidos, duplicação, persistência no cliente/admin; espera real do Workflow e retomada com relógio acelerado exclusivamente na branch de teste; supressão de convites antes do prazo/já avaliados e criação sem duplicação. Push no iPhone físico requer o teste no aparelho. O cron diário continua como recuperação de agendamentos que falhem ao iniciar, sem limitar o Workflow a uma execução por dia.

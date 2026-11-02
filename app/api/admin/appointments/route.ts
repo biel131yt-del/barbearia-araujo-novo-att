@@ -1,3 +1,4 @@
+import { scheduleReviewRequests } from "@/lib/review-scheduler";
 import { drainPushJobs } from "@/lib/push-jobs";
 import { after } from "next/server";
 import { NextResponse } from "next/server";
@@ -37,7 +38,7 @@ export async function PATCH(req: Request) {
  cancelled_at=CASE WHEN ${status}='cancelled' THEN NOW() ELSE cancelled_at END,updated_at=NOW()
  WHERE id=${id} AND status IN ('scheduled','confirmed') RETURNING *),
  revenue AS (INSERT INTO revenues(appointment_id,amount_cents,source,payment_method,received_at)
- SELECT id,price_cents,'appointment',payment_method,NOW() FROM updated WHERE status='completed' AND NOT EXISTS (SELECT 1 FROM revenues r WHERE r.appointment_id=updated.id) RETURNING id)
+ SELECT id,price_cents,'appointment',payment_method,NOW() FROM updated WHERE status='completed' AND NOT EXISTS (SELECT 1 FROM revenues r WHERE r.appointment_id=updated.id) RETURNING id), reminder AS(INSERT INTO review_requests(appointment_id,client_id,due_at) SELECT id,client_id,completed_at+INTERVAL '30 minutes' FROM updated WHERE status='completed' AND client_id IS NOT NULL ON CONFLICT(appointment_id) DO NOTHING RETURNING appointment_id)
  SELECT id FROM updated`;
     if (!rows.length)
       return NextResponse.json(
@@ -47,7 +48,9 @@ export async function PATCH(req: Request) {
         },
         { status: 409 },
       );
-    after(() => drainPushJobs().then(() => {}));
+    after(async () => {
+      await Promise.all([drainPushJobs(), scheduleReviewRequests()]);
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json(

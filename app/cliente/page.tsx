@@ -1,5 +1,6 @@
 "use client";
 
+import AppointmentReview from "@/components/AppointmentReview";
 import WhatsAppGate from "@/components/WhatsAppGate";
 import PushSubscription from "@/components/PushSubscription";
 import NotificationInbox from "@/components/NotificationInbox";
@@ -13,6 +14,15 @@ export default function ClientePage() {
 
   useEffect(() => {
     loadSession();
+    const refresh = () => {
+      if (document.visibilityState === "visible") void loadSession();
+    };
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, []);
 
   async function loadSession() {
@@ -74,6 +84,24 @@ export default function ClientePage() {
           <div className="mb-6">
             <PushSubscription audience="client" />
           </div>
+          {appointments.some((a) => a.status === "completed") && (
+            <section className="mb-6 space-y-3">
+              <h2 className="text-lg font-bold">Avalie seu atendimento</h2>
+              <p className="text-sm text-gray-500">
+                Uma avaliação por atendimento concluído. Seu comentário aparece
+                no painel da barbearia.
+              </p>
+              {appointments
+                .filter((a) => a.status === "completed")
+                .map((a) => (
+                  <AppointmentReview
+                    key={a.id}
+                    appointment={a}
+                    onSaved={loadAppointments}
+                  />
+                ))}
+            </section>
+          )}
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
             <h2 className="text-lg font-bold text-gray-900 mb-6 flex items-center gap-2">
               <Calendar className="h-5 w-5 text-blue-600" />

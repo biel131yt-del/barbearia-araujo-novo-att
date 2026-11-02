@@ -64,6 +64,19 @@ export default function NotificationInbox({
                 <p className="text-xs text-gray-500 mt-2">
                   {new Date(n.created_at).toLocaleString("pt-BR")}
                 </p>
+                {typeof n.link === "string" &&
+                  n.link.startsWith("/") &&
+                  !n.link.startsWith("//") &&
+                  !n.link.includes("\\") && (
+                    <a
+                      href={n.link}
+                      className="inline-block text-sm font-semibold text-blue-700 mt-2"
+                    >
+                      {n.link.includes("avaliar=")
+                        ? "Avaliar atendimento"
+                        : "Abrir"}
+                    </a>
+                  )}
                 {audience === "admin" && n.push_state && (
                   <p className="text-xs text-gray-500 mt-1">
                     Push:{" "}

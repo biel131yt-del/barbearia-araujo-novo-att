@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getAdminUser } from "@/lib/auth";
 import AppManifest from "@/components/AppManifest";
 import ThemeProvider from "@/components/ThemeProvider";
+import NotificationConsent from "@/components/NotificationConsent";
 import InstallApp from "@/components/InstallApp";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -51,6 +52,7 @@ export default async function RootLayout({
       >
         <ThemeProvider />
         {children}
+        <NotificationConsent />
         <InstallApp />
       </body>
     </html>

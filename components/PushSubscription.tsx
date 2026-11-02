@@ -35,16 +35,39 @@ export default function PushSubscription({
             if (r.ok) {
               const d = await r.json();
               setSubscribed(d.endpoints.includes(sub.endpoint));
+              if (
+                !d.endpoints.includes(sub.endpoint) &&
+                Notification.permission === "granted"
+              )
+                void subscribe(false);
             }
+          } else if (
+            typeof Notification !== "undefined" &&
+            Notification.permission === "granted" &&
+            (!apple ||
+              matchMedia("(display-mode: standalone)").matches ||
+              Boolean((navigator as any).standalone))
+          ) {
+            void subscribe(false);
           }
         })
         .catch(() => {});
   }, [audience]);
-  async function subscribe() {
+  async function subscribe(askPermission = true) {
+    if (!askPermission) {
+      try {
+        if (
+          localStorage.getItem("barbearia.push-disabled." + audience) === "true"
+        )
+          return;
+      } catch {}
+    }
     setBusy(true);
     setMessage("");
     try {
-      const permission = await Notification.requestPermission();
+      const permission = askPermission
+        ? await Notification.requestPermission()
+        : Notification.permission;
       if (permission !== "granted")
         throw new Error(
           "Permissão não concedida. Ative as notificações nos ajustes do aparelho para este aplicativo.",
@@ -93,6 +116,10 @@ export default function PushSubscription({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
       setSubscribed(true);
+      try {
+        localStorage.removeItem("barbearia.push-disabled." + audience);
+      } catch {}
+      window.dispatchEvent(new Event("barbearia-push-enabled"));
       setMessage(
         "Notificações ativadas neste aparelho. Use o teste abaixo para conferir.",
       );
@@ -119,6 +146,9 @@ export default function PushSubscription({
         await sub.unsubscribe();
       }
       setSubscribed(false);
+      try {
+        localStorage.setItem("barbearia.push-disabled." + audience, "true");
+      } catch {}
     } catch (e) {
       setMessage(e instanceof Error ? e.message : "Falha de conexão");
     } finally {
@@ -166,7 +196,7 @@ export default function PushSubscription({
           <button
             className={subscribed ? "admin-secondary" : "admin-primary"}
             disabled={busy}
-            onClick={subscribed ? unsubscribe : subscribe}
+            onClick={() => (subscribed ? unsubscribe() : subscribe())}
           >
             {busy
               ? "Aguarde…"

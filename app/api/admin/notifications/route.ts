@@ -1,3 +1,4 @@
+import { scheduleReviewRequests } from "@/lib/review-scheduler";
 import { drainPushJobs } from "@/lib/push-jobs";
 import { after } from "next/server";
 import { NextResponse } from "next/server";
@@ -15,7 +16,9 @@ export async function GET() {
     ORDER BY n.created_at DESC LIMIT 50
   `;
 
-  after(() => drainPushJobs().then(() => {}));
+  after(async () => {
+    await Promise.all([drainPushJobs(), scheduleReviewRequests()]);
+  });
   return NextResponse.json({ notifications: rows });
 }
 
